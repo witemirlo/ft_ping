@@ -13,7 +13,6 @@ CPPFLAGS := -I include/
 all: $(NAME)
 re: fclean all
 
-
 $(NAME): $(OBJS) include/ft_ping.h
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
@@ -31,4 +30,4 @@ fclean: clean
 	rm -f $(NAME)
 
 .SECONDARY: $(OBJS)
-.PHONY: all clean fclean re bonus execute_tests
+.PHONY: all clean fclean re
