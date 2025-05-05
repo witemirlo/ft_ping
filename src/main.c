@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "ft_ping.h"
+
 int main(int argc, char* argv[])
 {
 	int sockfd;
@@ -20,7 +22,7 @@ int main(int argc, char* argv[])
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 
-	int ret = getaddrinfo("216.58.209.78", 0, &hints, &result);
+	int ret = getaddrinfo("8.8.8.8", 0, &hints, &result);
 	if (ret < 0) {
 		gai_strerror(ret);
 		exit(EXIT_FAILURE);
@@ -41,8 +43,30 @@ int main(int argc, char* argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	struct ip ip;
-	struct icmp icmp;
+	// TODO: realmente necesito poner manualmente el header de ip?
+	struct ip ip = {0};
+	ip.ip_v = 0x4;
+	ip.ip_hl = 0x5; // TODO: calcular el tamano
+	ip.ip_len = 0x1c;
+	ip.ip_id = 0xabcf; // TODO: what?
+	ip.ip_ttl = 0x40;
+	ip.ip_p = 0x1;
+	memcpy(&(ip.ip_dst), rp->ai_addr, sizeof(*rp->ai_addr));
+	// ip.ip_src = ;
+
+	struct icmp icmp = {0};
+	icmp.icmp_type = ICMP_ECHO;
+	icmp.icmp_code = 0;
+	icmp.icmp_hun.ih_idseq.icd_id = 0x1234;
+	icmp.icmp_hun.ih_idseq.icd_seq = 1;
+
+	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
+	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_id);
+	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_seq);
+
+	printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
+	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
+	printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 
 	return 0;
 }
