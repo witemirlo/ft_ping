@@ -75,7 +75,7 @@ int main(int argc, char* argv[])
 	ip.ip_id = 0xabcf; // TODO: what?
 	ip.ip_ttl = 0x40;
 	ip.ip_p = 0x1;
-	memcpy(&(ip.ip_dst), rp->ai_addr, sizeof(*rp->ai_addr));
+	ip.ip_dst.s_addr = GET_OCTET(8, 8, 8, 8);
 	// ip.ip_src = ;
 
 	struct icmp icmp = {0};
