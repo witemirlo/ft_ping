@@ -1,0 +1,41 @@
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include "ft_ping.h"
+
+extern const char *__progname;
+
+t_flags get_flags(int argc, char* argv[])
+{
+	t_flags flags;
+	int     opt;
+
+	flags = NO_FLAGS;
+	while ((opt = getopt(argc, argv, "?v")) > 0) {
+		switch (opt) {
+		case 'v':
+			printf("TODO: option -v\n");
+			break;
+		default:
+			printf(
+				"\n"
+				"Usage\n"
+				"  ping [options] <destination>\n"
+				"\n"
+				"Options:\n"
+				"  <destination>      DNS name or IP address\n"
+				"  -v                 verbose output\n"
+			);
+			return EXIT_SUCCESS;
+		}
+	}
+
+	if (optind >= argc) {
+		fprintf(stderr, "%s: usage error: Destination address required", __progname);
+		exit(EXIT_FAILURE);
+	}
+
+	return flags;
+}

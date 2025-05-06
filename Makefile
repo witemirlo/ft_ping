@@ -1,7 +1,8 @@
 NAME     := ft_ping
 
 SRCS     := src/main.c\
-	    src/sum_ones_complement.c
+	    src/sum_ones_complement.c\
+	    src/get_flags.c
 
 OBJS     := $(SRCS:.c=.o)
 

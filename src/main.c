@@ -14,29 +14,9 @@
 
 int main(int argc, char* argv[])
 {
-	int opt;
-	while ((opt = getopt(argc, argv, "?v")) > 0) {
-		switch (opt) {
-		case 'v':
-			printf("TODO: option -v\n");
-			break;
-		default:
-			printf(
-				"Usage\n"
-				"  ping [options] <destination>\n"
-				"\n"
-				"Options:\n"
-				"  <destination>      DNS name or IP address\n"
-				"  -v                 verbose output\n"
-			);
-			return EXIT_SUCCESS;
-		}
-	}
+	t_flags flags = get_flags(argc, argv);
 
-	if (optind >= argc) {
-		fprintf(stderr, "%s: usage error: Destination address required", __progname);
-		exit(EXIT_FAILURE);
-	}
+	char const *const dst_addr = argv[optind];
 
 	int sockfd;
 	struct addrinfo hints = {0};
@@ -46,7 +26,8 @@ int main(int argc, char* argv[])
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 
-	int ret = getaddrinfo("8.8.8.8", 0, &hints, &result);
+
+	int ret = getaddrinfo(dst_addr, 0, &hints, &result);
 	if (ret < 0) {
 		gai_strerror(ret);
 		exit(EXIT_FAILURE);
