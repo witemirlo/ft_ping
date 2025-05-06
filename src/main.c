@@ -14,6 +14,30 @@
 
 int main(int argc, char* argv[])
 {
+	int opt;
+	while ((opt = getopt(argc, argv, "?v")) > 0) {
+		switch (opt) {
+		case 'v':
+			printf("TODO: option -v\n");
+			break;
+		default:
+			printf(
+				"Usage\n"
+				"  ping [options] <destination>\n"
+				"\n"
+				"Options:\n"
+				"  <destination>      DNS name or IP address\n"
+				"  -v                 verbose output\n"
+			);
+			return EXIT_SUCCESS;
+		}
+	}
+
+	if (optind >= argc) {
+		fprintf(stderr, "%s: usage error: Destination address required", __progname);
+		exit(EXIT_FAILURE);
+	}
+
 	int sockfd;
 	struct addrinfo hints = {0};
 	struct addrinfo *result = NULL;
@@ -64,9 +88,9 @@ int main(int argc, char* argv[])
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_id);
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_seq);
 
-	printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
+	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
-	printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
+	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 
 	return 0;
 }
