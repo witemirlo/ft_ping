@@ -5,8 +5,6 @@
 
 #include "ft_ping.h"
 
-extern const char *__progname;
-
 t_flags get_flags(int argc, char* argv[])
 {
 	t_flags flags;
