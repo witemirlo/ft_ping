@@ -22,6 +22,7 @@ int get_socket(char const* const addr)
 
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_flags = AI_CANONNAME;
 
 	ret = getaddrinfo(addr, 0, &hints, &result);
 	if (ret < 0) {
@@ -38,6 +39,9 @@ int get_socket(char const* const addr)
 		close(sockfd);
 	}
 	
+	int tmp = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr; // TODO: este el el address que tendre que poner en el paquete
+	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, rp->ai_canonname, (tmp & 0xff), ((tmp >> 8) & 0xff), ((tmp >> 16) & 0xff), ((tmp >> 24) & 0xff)); // TODO: el endianess
+
 	freeaddrinfo(result);
 	if (rp == NULL) {
 		fprintf(stderr, "%s: Error: Could not connect\n", __progname);
