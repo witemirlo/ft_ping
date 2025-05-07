@@ -1,8 +1,12 @@
 #include <arpa/inet.h>
-#include <netinet/ip_icmp.h>
+#include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -42,6 +46,19 @@ int main(int argc, char* argv[])
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
+	
+	if (send(sockfd, &icmp, sizeof(icmp), 0) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	}
 
-	return 0;
+	sleep(1);
+
+	char buffer[BUFSIZ] = {0};
+	if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	return EXIT_SUCCESS;
 }

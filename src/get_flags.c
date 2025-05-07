@@ -31,7 +31,7 @@ t_flags get_flags(int argc, char* argv[])
 	}
 
 	if (optind >= argc) {
-		fprintf(stderr, "%s: usage error: Destination address required", __progname);
+		fprintf(stderr, "%s: usage error: Destination address required\n", __progname);
 		exit(EXIT_FAILURE);
 	}
 
