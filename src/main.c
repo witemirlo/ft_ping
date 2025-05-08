@@ -47,6 +47,7 @@ int main(int argc, char* argv[])
 	ip.ip_p = 0x1;
 	ip.ip_dst.s_addr = GET_OCTET(8, 8, 8, 8); // TODO: poner la que toca
 	// ip.ip_src = ;
+	// ip.ip_off = IP_DF | IP_OFFMASK;
 
 	struct icmp icmp = {0};
 	icmp.icmp_type = ICMP_ECHO;
