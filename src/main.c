@@ -67,20 +67,49 @@ int main(int argc, char* argv[])
 	memcpy(tmp, &ip, sizeof(ip));
 	memcpy(tmp + sizeof(ip), &icmp, sizeof(icmp));
 	
-	if (send(sockfd, &tmp, sizeof(tmp), 0) < 0) {
+	struct sockaddr_in tmp2 = {0};
+	socklen_t tmp22 = sizeof(tmp2);
+	tmp2.sin_family = AF_INET;
+
+	int tmp3 = inet_pton(AF_INET, argv[1], &tmp2.sin_addr.s_addr);
+
+	if (tmp3 < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	} else if (tmp3 == 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+		fprintf(stderr, "%s: Error: not a valid network address\n", __progname);
+		return EXIT_FAILURE;
+	}
+
+	if (sendto(sockfd, &tmp, sizeof(tmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
+
+	// if (send(sockfd, &tmp, sizeof(tmp), 0) < 0) {
+	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	// 	return EXIT_FAILURE;
+	// }
 
 	sleep(1);
 
 	char buffer[BUFSIZ] = {0};
-	if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
+
+	if (recvfrom(sockfd, buffer, BUFSIZ, 0, (struct sockaddr*)&tmp2, &tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
+
+	// if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
+	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	// 	return EXIT_FAILURE;
+	// }
 
 	return EXIT_SUCCESS;
 }
