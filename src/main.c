@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +20,21 @@ int main(int argc, char* argv[])
 
 	char const *const addr = argv[optind];
 
-	int sockfd = get_socket(addr);
+	// int sockfd = get_socket(addr);
+	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+
+	if (sockfd < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	int opt = 1;
+	if (setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	}
 
 
 	// TODO: realmente necesito poner manualmente el header de ip?
@@ -46,8 +61,14 @@ int main(int argc, char* argv[])
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
+
+
+	uint8_t tmp[sizeof(ip) + sizeof(icmp)] = {0};
+	memcpy(tmp, &ip, sizeof(ip));
+	memcpy(tmp + sizeof(ip), &icmp, sizeof(icmp));
 	
-	if (send(sockfd, &icmp, sizeof(icmp), 0) < 0) {
+	if (send(sockfd, &tmp, sizeof(tmp), 0) < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
@@ -56,6 +77,7 @@ int main(int argc, char* argv[])
 
 	char buffer[BUFSIZ] = {0};
 	if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
