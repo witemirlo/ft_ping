@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 	icmp.icmp_hun.ih_idseq.icd_id = 0x1234;
 	icmp.icmp_hun.ih_idseq.icd_seq = 1;
 
-	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type << 8, icmp.icmp_code);
+	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_id);
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_seq);
 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 	// 	return EXIT_FAILURE;
 	// }
 
-	sleep(1);
+	// sleep(1);
 
 	char buffer[BUFSIZ] = {0};
 
