@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,6 +15,18 @@
 
 #include "ft_ping.h"
 
+void f(void const* buffer, size_t size)
+{
+	for (size_t i = 0; i < size; i++) {
+		for (size_t j = 0; j < 8; j++) {
+			printf("[%2x]", ((uint8_t const*)(buffer))[i + j]);
+		}
+		printf("\n");
+		i += 8;
+	}
+	printf("\n");
+}
+
 int main(int argc, char* argv[])
 {
 	t_flags flags = get_flags(argc, argv);
@@ -21,7 +34,8 @@ int main(int argc, char* argv[])
 	char const *const addr = argv[optind];
 
 	// int sockfd = get_socket(addr);
-	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+	// int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 
 	if (sockfd < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
@@ -30,12 +44,17 @@ int main(int argc, char* argv[])
 	}
 
 	int opt = 1;
-	if (setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
+	// if (setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
+	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	// 	return EXIT_FAILURE;
+	// }
+
+	if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
-
 
 	// TODO: realmente necesito poner manualmente el header de ip?
 	struct ip ip = {0};
@@ -63,16 +82,18 @@ int main(int argc, char* argv[])
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 
-
 	uint8_t tmp[sizeof(ip) + sizeof(icmp)] = {0};
-	memcpy(tmp, &ip, sizeof(ip));
-	memcpy(tmp + sizeof(ip), &icmp, sizeof(icmp));
+	// memcpy(tmp, &ip, sizeof(ip));
+	// memcpy(tmp + sizeof(ip), &icmp, sizeof(icmp));
+	memcpy(tmp, &icmp, sizeof(icmp));
 	
 	struct sockaddr_in tmp2 = {0};
 	socklen_t tmp22 = sizeof(tmp2);
 	tmp2.sin_family = AF_INET;
 
 	int tmp3 = inet_pton(AF_INET, argv[1], &tmp2.sin_addr.s_addr);
+
+	struct sockaddr_in tmp4 = tmp2;
 
 	if (tmp3 < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
@@ -84,33 +105,46 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	if (sendto(sockfd, &tmp, sizeof(tmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
+	// if (sendto(sockfd, &tmp, sizeof(tmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
+	if (sendto(sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	// if (send(sockfd, &tmp, sizeof(tmp), 0) < 0) {
+	char buffer[BUFSIZ] = {0};
+
+	// if (recvfrom(sockfd, buffer, BUFSIZ, 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
+	// if (recvfrom(sockfd, buffer, BUFSIZ, SOCK_NONBLOCK, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
 	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 	// 	return EXIT_FAILURE;
 	// }
-
-	// sleep(1);
-
-	char buffer[BUFSIZ] = {0};
-
-	if (recvfrom(sockfd, buffer, BUFSIZ, 0, (struct sockaddr*)&tmp2, &tmp22) < 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		return EXIT_FAILURE;
-	}
 
 	// if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
 	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 	// 	return EXIT_FAILURE;
 	// }
+
+	char buffer1[BUFSIZ] = {0};
+	char buffer2[BUFSIZ] = {0};
+	struct msghdr msg = {
+		.msg_name = &buffer1,
+		.msg_namelen = BUFSIZ,
+		.msg_control = &buffer2,
+		.msg_controllen = BUFSIZ,
+		.msg_iov = 0,
+		.msg_iovlen = 0,
+		.msg_flags = 0
+	};
+	if (recvmsg(sockfd, &msg, 0) < 0) {
+		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return EXIT_FAILURE;
+	}
+
+	printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_type);
 
 	return EXIT_SUCCESS;
 }
