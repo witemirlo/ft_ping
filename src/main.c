@@ -11,21 +11,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "ft_ping.h"
-
-void f(void const* buffer, size_t size)
-{
-	for (size_t i = 0; i < size; i++) {
-		for (size_t j = 0; j < 8; j++) {
-			printf("[%2x]", ((uint8_t const*)(buffer))[i + j]);
-		}
-		printf("\n");
-		i += 8;
-	}
-	printf("\n");
-}
 
 int main(int argc, char* argv[])
 {
@@ -34,7 +23,6 @@ int main(int argc, char* argv[])
 	char const *const addr = argv[optind];
 
 	// int sockfd = get_socket(addr);
-	// int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
 	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 
 	if (sockfd < 0) {
@@ -44,34 +32,16 @@ int main(int argc, char* argv[])
 	}
 
 	int opt = 1;
-	// if (setsockopt(sockfd, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
-	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-	// 	return EXIT_FAILURE;
-	// }
-
 	if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	// TODO: realmente necesito poner manualmente el header de ip?
-	struct ip ip = {0};
-	ip.ip_v = 0x4;
-	ip.ip_hl = 0x5; // TODO: calcular el tamano
-	ip.ip_len = 0x1c;
-	ip.ip_id = 0xabcf; // TODO: what?
-	ip.ip_ttl = 0x40;
-	ip.ip_p = 0x1;
-	ip.ip_dst.s_addr = GET_OCTET(8, 8, 8, 8); // TODO: poner la que toca
-	// ip.ip_src = ;
-	// ip.ip_off = IP_DF | IP_OFFMASK;
-
 	struct icmp icmp = {0};
 	icmp.icmp_type = ICMP_ECHO;
 	icmp.icmp_code = 0;
-	icmp.icmp_hun.ih_idseq.icd_id = 0x1234;
+	icmp.icmp_hun.ih_idseq.icd_id = 0x1234; // TODO: que id deberia poner?
 	icmp.icmp_hun.ih_idseq.icd_seq = 1;
 
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
@@ -81,19 +51,12 @@ int main(int argc, char* argv[])
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
 	// printf("%s:%d: %s: %x\n", __FILE__, __LINE__, __func__, icmp.icmp_cksum);
-
-	uint8_t tmp[sizeof(ip) + sizeof(icmp)] = {0};
-	// memcpy(tmp, &ip, sizeof(ip));
-	// memcpy(tmp + sizeof(ip), &icmp, sizeof(icmp));
-	memcpy(tmp, &icmp, sizeof(icmp));
 	
 	struct sockaddr_in tmp2 = {0};
 	socklen_t tmp22 = sizeof(tmp2);
 	tmp2.sin_family = AF_INET;
 
 	int tmp3 = inet_pton(AF_INET, argv[1], &tmp2.sin_addr.s_addr);
-
-	struct sockaddr_in tmp4 = tmp2;
 
 	if (tmp3 < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
@@ -106,26 +69,26 @@ int main(int argc, char* argv[])
 	}
 
 	// if (sendto(sockfd, &tmp, sizeof(tmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
+
+	clock_t start = clock();
 	if (sendto(sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	char buffer[BUFSIZ] = {0};
+	// char buffer[BUFSIZ] = {0};
 
-	// if (recvfrom(sockfd, buffer, BUFSIZ, 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
-	// if (recvfrom(sockfd, buffer, BUFSIZ, SOCK_NONBLOCK, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
+
+	// struct icmp prueba = {0};
+	// if (recvfrom(sockfd, &prueba, sizeof(prueba), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
 	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 	// 	return EXIT_FAILURE;
 	// }
 
-	// if (recv(sockfd, buffer, BUFSIZ, 0) < 0) {
-	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-	// 	return EXIT_FAILURE;
-	// }
+	// printf("%d\n",prueba.icmp_type);
+	// printf("%d\n",prueba.icmp_code);
 
 	char buffer1[BUFSIZ] = {0};
 	char buffer2[BUFSIZ] = {0};
@@ -143,8 +106,12 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
+	clock_t end = clock();
+	printf("time: %f", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 
 	printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_type);
+	printf("%ld\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_len);
+	printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_level);
 
 	return EXIT_SUCCESS;
 }
