@@ -77,41 +77,40 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	// char buffer[BUFSIZ] = {0};
+	char buffer[BUFSIZ] = {0};
 
 
 	// struct icmp prueba = {0};
 	// if (recvfrom(sockfd, &prueba, sizeof(prueba), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
-	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-	// 	return EXIT_FAILURE;
-	// }
-
-	// printf("%d\n",prueba.icmp_type);
-	// printf("%d\n",prueba.icmp_code);
-
-	char buffer1[BUFSIZ] = {0};
-	char buffer2[BUFSIZ] = {0};
-	struct msghdr msg = {
-		.msg_name = &buffer1,
-		.msg_namelen = BUFSIZ,
-		.msg_control = &buffer2,
-		.msg_controllen = BUFSIZ,
-		.msg_iov = 0,
-		.msg_iovlen = 0,
-		.msg_flags = 0
-	};
-	if (recvmsg(sockfd, &msg, 0) < 0) {
+	if (recvfrom(sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
-	clock_t end = clock();
-	printf("time: %f", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 
-	printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_type);
-	printf("%ld\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_len);
-	printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_level);
+	// printf("%d\n",prueba.icmp_type);
+	// printf("%d\n",prueba.icmp_code);
+
+	// char buffer1[BUFSIZ] = {0};
+	// char buffer2[BUFSIZ] = {0};
+	// struct msghdr msg = {
+	// 	.msg_name = &buffer1,
+	// 	.msg_namelen = BUFSIZ,
+	// 	.msg_control = &buffer2,
+	// 	.msg_controllen = BUFSIZ,
+	// 	.msg_iov = 0,
+	// 	.msg_iovlen = 0,
+	// 	.msg_flags = 0
+	// };
+	// if (recvmsg(sockfd, &msg, 0) < 0) {
+	// 	fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+	// 	fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	// 	return EXIT_FAILURE;
+	// }
+	clock_t end = clock();
+	printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
+
+	// printf("%d\n", ((struct cmsghdr*)(msg.msg_control))->cmsg_level);
 
 	return EXIT_SUCCESS;
 }
