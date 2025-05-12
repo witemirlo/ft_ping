@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
 
 	char const *const addr = argv[optind];
 
-	// int sockfd = get_socket(addr);
-	int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+	int sockfd = get_socket(addr);
+	// int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 
 	if (sockfd < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR

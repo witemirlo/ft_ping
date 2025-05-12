@@ -21,7 +21,8 @@ int get_socket(char const* const addr)
 	struct addrinfo *rp = NULL;
 
 	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_DGRAM;
+	hints.ai_socktype = SOCK_RAW;
+	hints.ai_protocol = IPPROTO_ICMP;
 	hints.ai_flags = AI_CANONNAME;
 
 	ret = getaddrinfo(addr, 0, &hints, &result);
@@ -31,14 +32,16 @@ int get_socket(char const* const addr)
 	}
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
+		printf("rp->ai_family: %d, rp->ai_socktype: %d, rp->ai_protocol: %d\n", rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-		if (sockfd < 0)
-			continue;
-		if (connect(sockfd, rp->ai_addr, rp->ai_addrlen) > -1) // TODO: ping tiene un commando para hacer esto, quizas no deberia hacerlo por defecto?
+		if (sockfd >= 0)
 			break;
 		close(sockfd);
 	}
+
+	printf("%p\n", rp);
 	
+	// TODO: que se pase un puntero y le metes la info de rp ahi
 	int tmp = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr; // TODO: este el el address que tendre que poner en el paquete
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, rp->ai_canonname, (tmp & 0xff), ((tmp >> 8) & 0xff), ((tmp >> 16) & 0xff), ((tmp >> 24) & 0xff)); // TODO: el endianess
 
