@@ -12,7 +12,7 @@
 
 #include "ft_ping.h"
 
-int get_socket(char const* const addr)
+int get_socket(char const* const addr, t_addr* const data)
 {
 	int             sockfd;
 	int             ret;
@@ -32,18 +32,14 @@ int get_socket(char const* const addr)
 	}
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		printf("rp->ai_family: %d, rp->ai_socktype: %d, rp->ai_protocol: %d\n", rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		sockfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 		if (sockfd >= 0)
 			break;
 		close(sockfd);
 	}
 
-	printf("%p\n", rp);
-	
-	// TODO: que se pase un puntero y le metes la info de rp ahi
-	int tmp = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr; // TODO: este el el address que tendre que poner en el paquete
-	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, rp->ai_canonname, (tmp & 0xff), ((tmp >> 8) & 0xff), ((tmp >> 16) & 0xff), ((tmp >> 24) & 0xff)); // TODO: el endianess
+	data->addr = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr;
+	strcpy(data->canonname, rp->ai_canonname);
 
 	freeaddrinfo(result);
 	if (rp == NULL) {

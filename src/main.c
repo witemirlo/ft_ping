@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
 {
 	t_flags flags = get_flags(argc, argv);
 
-	char const *const addr = argv[optind];
-
-	int sockfd = get_socket(addr);
+	t_addr data = {0};
+	int sockfd = get_socket(argv[1], &data);
+	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr & 0xff), ((data.addr >> 8) & 0xff), ((data.addr >> 16) & 0xff), ((data.addr >> 24) & 0xff)); // TODO: el endianess
 	// int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 
 	if (sockfd < 0) {
@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
 
 	// if (sendto(sockfd, &tmp, sizeof(tmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 
+	char buffer[BUFSIZ] = {0};
 	clock_t start = clock();
 	if (sendto(sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
@@ -77,7 +78,6 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	char buffer[BUFSIZ] = {0};
 
 
 	// struct icmp prueba = {0};
