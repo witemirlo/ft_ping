@@ -65,6 +65,20 @@ static void set_socket_options(int sockfd)
 	}
 }
 
+char* get_ip_in_chars(struct in_addr addr)
+{
+	const char* tmp = inet_ntoa(addr);
+	char*       ip_char = NULL;
+
+	ip_char = strdup(tmp);
+	if (ip_char == NULL) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	return ip_char;
+}
+
 t_connection_data get_connection_data(char const* const str_addr)
 {
 	t_connection_data data = {0};
@@ -81,15 +95,17 @@ t_connection_data get_connection_data(char const* const str_addr)
 		exit(EXIT_FAILURE);
 	}
 
-	data.addr = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr;
+	data.addr = *((struct sockaddr_in*)(rp->ai_addr));
 	data.canonname = strdup(rp->ai_canonname);
+
+	freeaddrinfo(result);
 	if (data.canonname == NULL) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		freeaddrinfo(result);
 		exit(EXIT_FAILURE);
 	}
 
-	freeaddrinfo(result);
+	data.ip_char = get_ip_in_chars(data.addr.sin_addr);
+
 	set_socket_options(data.sockfd);
 
 	return data;
@@ -98,4 +114,5 @@ t_connection_data get_connection_data(char const* const str_addr)
 void destroy_connection_data(t_connection_data* data)
 {
 	free(data->canonname);
+	free(data->ip_char);
 }
