@@ -15,13 +15,13 @@
 
 static struct addrinfo get_hints(void)
 {
-	struct addrinfo hints = {
-		.ai_family = AF_INET,
-		.ai_socktype = SOCK_RAW,
-		.ai_protocol = IPPROTO_ICMP,
-		.ai_flags = AI_CANONNAME
-	};
-	
+	struct addrinfo hints = {0};
+
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_RAW;
+	hints.ai_protocol = IPPROTO_ICMP;
+	hints.ai_flags = AI_CANONNAME;
+
 	return hints;
 }
 
