@@ -20,7 +20,8 @@ int main(int argc, char* argv[])
 {
 	t_flags flags = get_flags(argc, argv);
 
-	t_connection_data data = get_connection_data(argv[1]);
+	print_verbose_header(flags);
+	t_connection_data data = get_connection_data(argv[optind]);
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr.sin_addr.s_addr & 0xff), ((data.addr.sin_addr.s_addr >> 8) & 0xff), ((data.addr.sin_addr.s_addr >> 16) & 0xff), ((data.addr.sin_addr.s_addr >> 24) & 0xff)); // TODO: el endianess
 
 	struct icmp icmp = {0};
@@ -48,7 +49,6 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	} else if (tmp3 == 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		// fprintf(stderr, "%s: Error: not a valid network address\n", __progname);
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}

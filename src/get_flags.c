@@ -14,7 +14,7 @@ t_flags get_flags(int argc, char* argv[])
 	while ((opt = getopt(argc, argv, "?v")) > 0) {
 		switch (opt) {
 		case 'v':
-			printf("TODO: option -v\n");
+			flags |= VERBOSE_OUTPUT;
 			break;
 		default:
 			printf(
@@ -26,7 +26,7 @@ t_flags get_flags(int argc, char* argv[])
 				"  <destination>      DNS name or IP address\n"
 				"  -v                 verbose output\n"
 			);
-			return EXIT_SUCCESS;
+			exit(EXIT_SUCCESS);
 		}
 	}
 

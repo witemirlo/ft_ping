@@ -3,6 +3,7 @@ NAME     := ft_ping
 SRCS     := src/main.c\
 	    src/connection_data.c\
 	    src/get_flags.c\
+	    src/verbose.c\
 	    src/sum_ones_complement.c
 
 OBJS     := $(SRCS:.c=.o)
