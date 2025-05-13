@@ -100,6 +100,7 @@ t_connection_data get_connection_data(char const* const str_addr)
 	}
 
 	data.addr = *((struct sockaddr_in*)(rp->ai_addr));
+	data.addr_len = sizeof(data.addr);
 	data.canonname = strdup(rp->ai_canonname);
 
 	freeaddrinfo(result);

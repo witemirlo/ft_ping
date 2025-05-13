@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -18,10 +19,12 @@
 
 int main(int argc, char* argv[])
 {
-	t_flags flags = get_flags(argc, argv);
+	t_flags           flags;
+	t_connection_data data;
 
+	flags = get_flags(argc, argv);
 	print_verbose_header(flags);
-	t_connection_data data = get_connection_data(argv[optind]);
+	data = get_connection_data(argv[optind]);
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr.sin_addr.s_addr & 0xff), ((data.addr.sin_addr.s_addr >> 8) & 0xff), ((data.addr.sin_addr.s_addr >> 16) & 0xff), ((data.addr.sin_addr.s_addr >> 24) & 0xff)); // TODO: el endianess
 
 	struct icmp icmp = {0};
@@ -36,11 +39,6 @@ int main(int argc, char* argv[])
 
 	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
 	
-	struct sockaddr_in tmp2 = {0};
-	socklen_t tmp22 = sizeof(tmp2);
-	tmp2.sin_family = AF_INET;
-
-	// int tmp3 = inet_pton(AF_INET, argv[1], &data.addr.sin_addr.s_addr);
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
 
 	if (tmp3 < 0) {
@@ -54,22 +52,29 @@ int main(int argc, char* argv[])
 	}
 
 	char buffer[BUFSIZ] = {0};
-	clock_t start = clock();
-	if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		return EXIT_FAILURE;
-	}
 
-	if (recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		return EXIT_FAILURE;
+	signal(SIGINT, signal_handler);
+	while (is_running) {
+		clock_t start = clock();
+
+		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
+			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+			return EXIT_FAILURE;
+		}
+
+		if (recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&data.addr, &data.addr_len) <= 0) {
+			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+			return EXIT_FAILURE;
+		}
+
+		clock_t end = clock();
+		printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
+		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
-	
-	clock_t end = clock();
-	printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 
 	destroy_connection_data(&data);
+	printf("TODO: data\n");
 	return EXIT_SUCCESS;
 }
