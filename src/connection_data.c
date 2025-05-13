@@ -67,34 +67,32 @@ static void set_socket_options(int sockfd)
 
 t_connection_data get_connection_data(char const* const str_addr)
 {
-	char                  *canonname = NULL;
-	int                   sockfd = -1;
-	in_addr_t             addr;
+	t_connection_data data = {0};
 
 	const struct addrinfo hints = get_hints();
 	struct addrinfo       *result = NULL;
 	struct addrinfo       *rp = NULL;
 
 	get_addrinfo(str_addr, &hints, &result);
-	sockfd = get_fd_from_addrinfo(result, &rp);
+	data.sockfd = get_fd_from_addrinfo(result, &rp);
 
-	if (sockfd < 0 || rp == NULL) {
+	if (data.sockfd < 0 || rp == NULL) {
 		freeaddrinfo(result);
 		exit(EXIT_FAILURE);
 	}
 
-	addr = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr;
-	canonname = strdup(rp->ai_canonname);
-	if (canonname == NULL) {
+	data.addr = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr;
+	data.canonname = strdup(rp->ai_canonname);
+	if (data.canonname == NULL) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		freeaddrinfo(result);
 		exit(EXIT_FAILURE);
 	}
 
 	freeaddrinfo(result);
-	set_socket_options(sockfd);
+	set_socket_options(data.sockfd);
 
-	return (t_connection_data){.addr = addr, .sockfd = sockfd, .canonname = canonname};
+	return data;
 }
 
 void destroy_connection_data(t_connection_data* data)
