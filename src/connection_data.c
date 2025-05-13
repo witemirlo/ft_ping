@@ -65,7 +65,7 @@ static void set_socket_options(int sockfd)
 	}
 }
 
-t_connexion_data get_connexion_data(char const* const str_addr)
+t_connection_data get_connection_data(char const* const str_addr)
 {
 	char                  *canonname = NULL;
 	int                   sockfd = -1;
@@ -94,5 +94,10 @@ t_connexion_data get_connexion_data(char const* const str_addr)
 	freeaddrinfo(result);
 	set_socket_options(sockfd);
 
-	return (t_connexion_data){.addr = addr, .sockfd = sockfd, .canonname = canonname};
+	return (t_connection_data){.addr = addr, .sockfd = sockfd, .canonname = canonname};
+}
+
+void destroy_connection_data(t_connection_data* data)
+{
+	free(data->canonname);
 }

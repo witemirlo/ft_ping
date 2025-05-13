@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
 {
 	t_flags flags = get_flags(argc, argv);
 
-	t_connexion_data data = get_connexion_data(argv[1]);
+	t_connection_data data = get_connection_data(argv[1]);
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr & 0xff), ((data.addr >> 8) & 0xff), ((data.addr >> 16) & 0xff), ((data.addr >> 24) & 0xff)); // TODO: el endianess
 
 	struct icmp icmp = {0};
@@ -53,13 +53,13 @@ int main(int argc, char* argv[])
 
 	char buffer[BUFSIZ] = {0};
 	clock_t start = clock();
-	if (sendto(sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
+	if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&tmp2, tmp22) < 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
 	}
 
-	if (recvfrom(sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
+	if (recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&tmp2, &tmp22) <= 0) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return EXIT_FAILURE;
@@ -68,5 +68,6 @@ int main(int argc, char* argv[])
 	clock_t end = clock();
 	printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 
+	destroy_connection_data(&data);
 	return EXIT_SUCCESS;
 }

@@ -1,7 +1,7 @@
 NAME     := ft_ping
 
 SRCS     := src/main.c\
-	    src/connexion_data.c\
+	    src/connection_data.c\
 	    src/get_flags.c\
 	    src/sum_ones_complement.c
 

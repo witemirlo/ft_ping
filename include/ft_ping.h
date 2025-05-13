@@ -14,16 +14,17 @@ typedef enum e_flags {
 	VERBOSE_OUTPUT = 0x1
 } t_flags;
 
-typedef struct s_conexion_data {
-	int               sockfd;
-	in_addr_t         addr;
-	char const* const canonname;
-} t_connexion_data;
+typedef struct s_connection_data {
+	int       sockfd;
+	in_addr_t addr;
+	char*     canonname;
+} t_connection_data;
 
 uint16_t sum_ones_complement(uint16_t a, uint16_t b);
 
 t_flags get_flags(int argc, char* argv[]);
 
-t_connexion_data get_connexion_data(char const* const addr);
+t_connection_data get_connection_data(char const* const addr);
+void destroy_connection_data(t_connection_data* data);
 
 #endif
