@@ -35,7 +35,7 @@ static void get_addrinfo(char const* const addr, struct addrinfo const* const hi
 	}
 }
 
-static int get_fd_from_addrinfo(struct addrinfo const* addr, t_addr* const data)
+static int get_fd_from_addrinfo(struct addrinfo* addr, struct addrinfo** rp)
 {
 	int sockfd = -1;
 
@@ -46,13 +46,12 @@ static int get_fd_from_addrinfo(struct addrinfo const* addr, t_addr* const data)
 		addr = addr->ai_next;
 	}
 
-	if (addr == NULL)
-		fprintf(stderr, "%s: Error: Could not connect\n", __progname);
-	else {
-		data->addr = ((struct sockaddr_in*)(addr->ai_addr))->sin_addr.s_addr;
-		strcpy(data->canonname, addr->ai_canonname);
+	if (addr == NULL) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
+	*rp = addr;
 	return sockfd;
 }
 
@@ -66,20 +65,34 @@ static void set_socket_options(int sockfd)
 	}
 }
 
-int get_socket(char const* const addr, t_addr* const data)
+t_connexion_data get_connexion_data(char const* const str_addr)
 {
+	char                  *canonname = NULL;
+	int                   sockfd = -1;
+	in_addr_t             addr;
+
 	const struct addrinfo hints = get_hints();
 	struct addrinfo       *result = NULL;
-	int                   sockfd = -1;
+	struct addrinfo       *rp = NULL;
 
-	get_addrinfo(addr, &hints, &result);
-	sockfd = get_fd_from_addrinfo(result, data);
+	get_addrinfo(str_addr, &hints, &result);
+	sockfd = get_fd_from_addrinfo(result, &rp);
+
+	if (sockfd < 0 || rp == NULL) {
+		freeaddrinfo(result);
+		exit(EXIT_FAILURE);
+	}
+
+	addr = ((struct sockaddr_in*)(rp->ai_addr))->sin_addr.s_addr;
+	canonname = strdup(rp->ai_canonname);
+	if (canonname == NULL) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		freeaddrinfo(result);
+		exit(EXIT_FAILURE);
+	}
 
 	freeaddrinfo(result);
-	if (sockfd < 0)
-		exit(EXIT_FAILURE);
-
 	set_socket_options(sockfd);
 
-	return sockfd;
+	return (t_connexion_data){.addr = addr, .sockfd = sockfd, .canonname = canonname};
 }

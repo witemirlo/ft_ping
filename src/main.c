@@ -20,8 +20,7 @@ int main(int argc, char* argv[])
 {
 	t_flags flags = get_flags(argc, argv);
 
-	t_addr data = {0};
-	const int sockfd = get_socket(argv[1], &data);
+	t_connexion_data data = get_connexion_data(argv[1]);
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr & 0xff), ((data.addr >> 8) & 0xff), ((data.addr >> 16) & 0xff), ((data.addr >> 24) & 0xff)); // TODO: el endianess
 
 	struct icmp icmp = {0};
