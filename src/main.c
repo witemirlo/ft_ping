@@ -28,16 +28,7 @@ int main(int argc, char* argv[])
 	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr.sin_addr.s_addr & 0xff), ((data.addr.sin_addr.s_addr >> 8) & 0xff), ((data.addr.sin_addr.s_addr >> 16) & 0xff), ((data.addr.sin_addr.s_addr >> 24) & 0xff)); // TODO: el endianess
 
 	struct icmp icmp = {0};
-	icmp.icmp_type = ICMP_ECHO;
-	icmp.icmp_code = 0;
-	icmp.icmp_hun.ih_idseq.icd_id = 0x1234; // TODO: en linux es un numero random
-	icmp.icmp_hun.ih_idseq.icd_seq = htons(1);
-
-	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
-	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_id);
-	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_seq);
-
-	icmp.icmp_cksum = 0xffff - icmp.icmp_cksum;
+	init_icmp(&icmp);
 	
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
 
@@ -56,6 +47,8 @@ int main(int argc, char* argv[])
 	signal(SIGINT, signal_int);
 	signal(SIGQUIT, signal_quit);
 	while (is_running) {
+		update_icmp_seq(&icmp);
+		update_icmp_checksum(&icmp);
 		clock_t start = clock();
 
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {

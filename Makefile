@@ -3,8 +3,8 @@ NAME     := ft_ping
 SRCS     := src/main.c\
 	    src/connection_data.c\
 	    src/get_flags.c\
+	    src/icmp.c\
 	    src/signal.c\
-	    src/sum_ones_complement.c\
 	    src/verbose.c
 
 OBJS     := $(SRCS:.c=.o)

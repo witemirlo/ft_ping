@@ -5,7 +5,8 @@
 # include <netinet/in.h>
 # include <stdbool.h>
 # include <stdint.h>
-#include <sys/socket.h>
+# include <sys/socket.h>
+# include <netinet/ip_icmp.h>
 
 
 // GLOBALS ---------------------------------------------------------------------
@@ -29,17 +30,23 @@ typedef struct s_connection_data {
 
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------
+// -- CONNECTION DATA ----------------------------------------------------------
 t_connection_data get_connection_data(char const* const addr);
-
 void destroy_connection_data(t_connection_data* data);
 
+// -- PARSING ------------------------------------------------------------------
 t_flags get_flags(int argc, char* argv[]);
 
-uint16_t sum_ones_complement(uint16_t a, uint16_t b);
-
+// -- FLAGS --------------------------------------------------------------------
 void print_verbose_header(t_flags flags);
 
+// -- SIGNALS ------------------------------------------------------------------
 void signal_int(int sig);
 void signal_quit(int sig);
+
+// -- ICMP PAQUETS -------------------------------------------------------------
+void init_icmp(struct icmp* const icmp);
+void update_icmp_seq(struct icmp* const icmp);
+void update_icmp_checksum(struct icmp* const icmp);
 
 #endif
