@@ -39,6 +39,7 @@ uint16_t sum_ones_complement(uint16_t a, uint16_t b);
 
 void print_verbose_header(t_flags flags);
 
-void signal_handler(int sig);
+void signal_int(int sig);
+void signal_quit(int sig);
 
 #endif

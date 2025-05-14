@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	struct icmp icmp = {0};
 	icmp.icmp_type = ICMP_ECHO;
 	icmp.icmp_code = 0;
-	icmp.icmp_hun.ih_idseq.icd_id = 0x1234; // TODO: que id deberia poner?
+	icmp.icmp_hun.ih_idseq.icd_id = 0x1234; // TODO: en linux es un numero random
 	icmp.icmp_hun.ih_idseq.icd_seq = htons(1);
 
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
@@ -53,8 +53,11 @@ int main(int argc, char* argv[])
 
 	char buffer[BUFSIZ] = {0};
 
-	signal(SIGINT, signal_handler);
+	signal(SIGINT, signal_int);
+	signal(SIGQUIT, signal_quit);
+	int i = 1;
 	while (is_running) {
+		icmp.icmp_hun.ih_idseq.icd_seq = htons(i++);
 		clock_t start = clock();
 
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
