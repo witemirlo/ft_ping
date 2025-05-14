@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	icmp.icmp_type = ICMP_ECHO;
 	icmp.icmp_code = 0;
 	icmp.icmp_hun.ih_idseq.icd_id = 0x1234; // TODO: que id deberia poner?
-	icmp.icmp_hun.ih_idseq.icd_seq = 1;
+	icmp.icmp_hun.ih_idseq.icd_seq = htons(1);
 
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_type, icmp.icmp_code);
 	icmp.icmp_cksum = sum_ones_complement(icmp.icmp_cksum, icmp.icmp_hun.ih_idseq.icd_id);
