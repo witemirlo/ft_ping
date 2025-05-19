@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 	while (is_running) {
 		update_icmp_seq(&icmp);
 		update_icmp_checksum(&icmp);
+		icmp.icmp_otime = 42;
 		clock_t start = clock();
 
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
