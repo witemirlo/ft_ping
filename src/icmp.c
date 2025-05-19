@@ -26,14 +26,14 @@ void init_icmp(struct icmp* const icmp)
 
         icmp->icmp_type = ICMP_ECHO;
 	icmp->icmp_code = 0;
-	icmp->icmp_hun.ih_idseq.icd_id = n; // TODO: en linux es un numero random
+	icmp->icmp_id = n;
 }
 
 void update_icmp_seq(struct icmp* const icmp)
 {
         static short seq = 1;
 
-	icmp->icmp_hun.ih_idseq.icd_seq = htons(seq);
+	icmp->icmp_seq = htons(seq);
         seq++;
 }
 
