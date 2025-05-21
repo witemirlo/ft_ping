@@ -46,7 +46,7 @@ void signal_quit(int sig);
 
 // -- ICMP PAQUETS -------------------------------------------------------------
 void init_icmp(struct icmp* const icmp);
-void update_icmp_seq(struct icmp* const icmp);
+void update_icmp(struct icmp* const icmp);
 void update_icmp_checksum(struct icmp* const icmp);
 
 #endif

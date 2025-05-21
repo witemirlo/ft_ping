@@ -29,19 +29,25 @@ void init_icmp(struct icmp* const icmp)
 	icmp->icmp_id = n;
 }
 
-void update_icmp_seq(struct icmp* const icmp)
+void update_icmp(struct icmp* const icmp)
 {
         static short seq = 1;
 
+	icmp->icmp_otime = time(NULL);
 	icmp->icmp_seq = htons(seq);
         seq++;
 }
 
 void update_icmp_checksum(struct icmp* const icmp)
 {
+	icmp->icmp_cksum = 0;
+
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_type, icmp->icmp_code);
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_hun.ih_idseq.icd_id);
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_hun.ih_idseq.icd_seq);
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_id);
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_seq);
+
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime >> 16));
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime & 0xffff));
 
 	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;
 }

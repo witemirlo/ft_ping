@@ -47,9 +47,8 @@ int main(int argc, char* argv[])
 	signal(SIGINT, signal_int);
 	signal(SIGQUIT, signal_quit);
 	while (is_running) {
-		update_icmp_seq(&icmp);
+		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
-		// icmp.icmp_otime = time(NULL);
 		clock_t start = clock();
 
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
