@@ -1,6 +1,7 @@
 #include <netinet/ip_icmp.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include "ft_ping.h"
@@ -32,8 +33,14 @@ void init_icmp(struct icmp* const icmp)
 void update_icmp(struct icmp* const icmp)
 {
         static short seq = 1;
+	static struct timeval tv = {0};
 
-	icmp->icmp_otime = time(NULL);
+	if (gettimeofday(&tv, NULL) < 0) {
+		// TODO: errores, quizas retornar algo para que main limpie
+		return;
+	}
+	icmp->icmp_otime = tv.tv_sec;
+	icmp->icmp_rtime = tv.tv_usec;
 	icmp->icmp_seq = htons(seq);
         seq++;
 }
@@ -48,6 +55,9 @@ void update_icmp_checksum(struct icmp* const icmp)
 
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime >> 16));
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime & 0xffff));
+
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime >> 16));
+	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime & 0xffff));
 
 	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;
 }

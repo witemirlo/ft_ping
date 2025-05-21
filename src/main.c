@@ -46,6 +46,9 @@ int main(int argc, char* argv[])
 
 	signal(SIGINT, signal_int);
 	signal(SIGQUIT, signal_quit);
+
+	size_t tmp = 0;
+	struct icmp received = {0};
 	while (is_running) {
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
@@ -57,13 +60,17 @@ int main(int argc, char* argv[])
 			return EXIT_FAILURE;
 		}
 
-		if (recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&data.addr, &data.addr_len) <= 0) {
+		tmp = recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&data.addr, &data.addr_len);
+		if (tmp <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 			return EXIT_FAILURE;
 		}
-
 		clock_t end = clock();
+
+		memcpy(&received, buffer, tmp - sizeof(struct ip));
+		printf("%s:%d: %u %u\n", __FILE__, __LINE__, received.icmp_otime, icmp.icmp_otime); // TODO: BORRAR
+
 		printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
