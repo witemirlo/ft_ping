@@ -86,7 +86,7 @@ int main(int argc, char* argv[])
 		printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time); // TODO: BORRAR
 
 		// printf("time: %f\n", (time) / 1000.);
-		printf("%d bytes from (TODO: ¿HAY ALGUNA MANERA DE ACERLO SIN BITWISE?): icmp_seq=%d ttl=%d time=%.2f ms\n", ntohs(ip.ip_len), ntohs(received.icmp_seq), ntohs(ip.ip_ttl), time);
+		printf("%d bytes from (TODO: ¿HAY ALGUNA MANERA DE ACERLO SIN BITWISE?): icmp_seq=%d ttl=%d time=%.2f ms\n", ntohs(ip.ip_len), ntohs(received.icmp_seq), ip.ip_ttl, time);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
 
