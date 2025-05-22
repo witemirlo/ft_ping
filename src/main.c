@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
 	size_t tmp = 0;
 	struct icmp received = {0};
 	while (is_running) {
+		memset(buffer, 0, sizeof(buffer));
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
 		clock_t start = clock();
@@ -68,8 +69,8 @@ int main(int argc, char* argv[])
 		}
 		clock_t end = clock();
 
-		memcpy(&received, buffer, tmp - sizeof(struct ip));
-		printf("%s:%d: %u %u\n", __FILE__, __LINE__, received.icmp_otime, icmp.icmp_otime); // TODO: BORRAR
+		memcpy(&received, buffer + sizeof(struct ip), tmp - sizeof(struct ip));
+		printf("%s:%d: %u %u\n", __FILE__, __LINE__, ntohl(received.icmp_otime), ntohl(received.icmp_rtime)); // TODO: BORRAR
 
 		printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
