@@ -1,3 +1,4 @@
+#include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,8 +40,8 @@ void update_icmp(struct icmp* const icmp)
 		// TODO: errores, quizas retornar algo para que main limpie
 		return;
 	}
-	icmp->icmp_otime = tv.tv_sec;
-	icmp->icmp_rtime = tv.tv_usec;
+	icmp->icmp_otime = htonl(tv.tv_sec);
+	icmp->icmp_rtime = htonl(tv.tv_usec);
 	icmp->icmp_seq = htons(seq);
         seq++;
 }
