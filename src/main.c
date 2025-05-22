@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
@@ -48,12 +49,12 @@ int main(int argc, char* argv[])
 	signal(SIGQUIT, signal_quit);
 
 	size_t tmp = 0;
+	struct timeval tv = {0};
 	struct icmp received = {0};
 	while (is_running) {
 		memset(buffer, 0, sizeof(buffer));
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
-		clock_t start = clock();
 
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
@@ -67,12 +68,22 @@ int main(int argc, char* argv[])
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 			return EXIT_FAILURE;
 		}
-		clock_t end = clock();
 
+		gettimeofday(&tv, NULL);
 		memcpy(&received, buffer + sizeof(struct ip), tmp - sizeof(struct ip));
-		printf("%s:%d: %u %u\n", __FILE__, __LINE__, ntohl(received.icmp_otime), ntohl(received.icmp_rtime)); // TODO: BORRAR
 
-		printf("time: %f\n", (((double)(end - start)) / CLOCKS_PER_SEC) * 100000);
+		uint64_t t1, t2;
+
+		snprintf(buffer, sizeof(buffer), "%lu%lu", tv.tv_sec, tv.tv_usec);
+		t1 = strtoull(buffer, NULL, 10);
+
+		snprintf(buffer, sizeof(buffer), "%u%u", ntohl(received.icmp_otime), ntohl(received.icmp_rtime));
+		t2 = strtoull(buffer, NULL, 10);
+
+		uint64_t time =  t1 - t2;
+		printf("%s:%d: %lu - %lu = %lu\n", __FILE__, __LINE__, t1, t2, time); // TODO: BORRAR
+
+		printf("time: %f\n", (time) / 1000.);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
 
