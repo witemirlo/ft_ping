@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
 	size_t tmp = 0;
 	struct timeval tv = {0};
 	struct icmp received = {0};
+	struct ip ip = {0};
 	while (is_running) {
 		memset(buffer, 0, sizeof(buffer));
 		update_icmp(&icmp);
@@ -70,6 +71,7 @@ int main(int argc, char* argv[])
 		}
 
 		gettimeofday(&tv, NULL);
+		memcpy(&ip, buffer, sizeof(struct ip));
 		memcpy(&received, buffer + sizeof(struct ip), tmp - sizeof(struct ip));
 
 		uint64_t t1, t2;
@@ -80,10 +82,11 @@ int main(int argc, char* argv[])
 		snprintf(buffer, sizeof(buffer), "%u%u", ntohl(received.icmp_otime), ntohl(received.icmp_rtime));
 		t2 = strtoull(buffer, NULL, 10);
 
-		uint64_t time =  t1 - t2;
-		printf("%s:%d: %lu - %lu = %lu\n", __FILE__, __LINE__, t1, t2, time); // TODO: BORRAR
+		double time =  (t1 - t2) / 1000.;
+		printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time); // TODO: BORRAR
 
-		printf("time: %f\n", (time) / 1000.);
+		// printf("time: %f\n", (time) / 1000.);
+		printf("%d bytes from (TODO: ¿HAY ALGUNA MANERA DE ACERLO SIN BITWISE?): icmp_seq=%d ttl=%d time=%.2f ms\n", ntohs(ip.ip_len), ntohs(received.icmp_seq), ntohs(ip.ip_ttl), time);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
 
