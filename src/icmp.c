@@ -21,7 +21,7 @@ void init_icmp(struct icmp* const icmp)
 {
         int n;
 
-        memset(icmp, 0, sizeof(icmp));
+        memset(icmp, 0, sizeof(*icmp));
 
         srand(time(NULL));
         n = rand();
