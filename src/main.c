@@ -16,12 +16,28 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <sys/queue.h>
+
 #include "ft_ping.h"
+
+struct entry {
+	double time;
+	SLIST_ENTRY(entry) entries;
+};
+
+SLIST_HEAD(slisthead, entry);
 
 int main(int argc, char* argv[])
 {
 	t_flags           flags;
 	t_connection_data data;
+
+	//----------------------------------------------------------------------
+	struct entry *node;
+	struct slisthead head;
+
+	SLIST_INIT(&head);
+	//----------------------------------------------------------------------
 
 	flags = get_flags(argc, argv);
 	print_verbose_header(flags);
@@ -52,6 +68,9 @@ int main(int argc, char* argv[])
 	struct timeval tv = {0};
 	struct icmp received = {0};
 	struct ip ip = {0};
+
+
+	size_t count1 = 0, count2 = 0;
 	while (is_running) {
 		memset(buffer, 0, sizeof(buffer));
 		update_icmp(&icmp);
@@ -60,19 +79,26 @@ int main(int argc, char* argv[])
 		if (sendto(data.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+			// TODO: control de leaks
 			return EXIT_FAILURE;
 		}
+		count1++;
 
+		// TODO: Habria que meter paralelismo?
 		tmp = recvfrom(data.sockfd, &buffer, sizeof(buffer), 0, (struct sockaddr*)&data.addr, &data.addr_len);
 		if (tmp <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+			// TODO: control de leaks
 			return EXIT_FAILURE;
 		}
+		count2++;
 
 		gettimeofday(&tv, NULL);
+
 		memcpy(&ip, buffer, sizeof(struct ip));
 		memcpy(&received, buffer + sizeof(struct ip), tmp - sizeof(struct ip));
+
 
 		uint64_t t1, t2;
 
@@ -83,6 +109,18 @@ int main(int argc, char* argv[])
 		t2 = strtoull(buffer, NULL, 10);
 
 		double time =  (t1 - t2) / 1000.;
+
+		node = malloc(sizeof(*node));
+		if (node == NULL) {
+			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
+			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+			// TODO: control de leaks
+			return EXIT_FAILURE;
+		}
+
+		node->time = time;
+		SLIST_INSERT_HEAD(&head, node, entries);
+
 		printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time); // TODO: BORRAR
 
 		getnameinfo((struct sockaddr const *)&data.addr, data.addr_len, buffer, sizeof(buffer), NULL, 0, 0);
@@ -90,6 +128,28 @@ int main(int argc, char* argv[])
 		printf("%d bytes from %s (TODO: ¿HAY ALGUNA MANERA DE ACERLO SIN BITWISE?): icmp_seq=%d ttl=%d time=%.2f ms\n", ntohs(ip.ip_len), buffer, ntohs(received.icmp_seq), ip.ip_ttl, time);
 		sleep(1); // TODO: el bucle no es exactamente asi, pero tengo que ver si ping hace alguna cola, timeout o si llega un paquete posterior descarta el anterior ni no ha llegado
 	}
+
+	double total_time = 0; // TODO: seguro que lo otro mide esto?
+	SLIST_FOREACH(node, &head, entries)
+		total_time += node->time;
+
+	printf("--- %s %s statistics ---\n"
+		"%lu packets transmitted, %lu received, %f%% packet loss, time %fms\n"
+		"rtt min/avg/max/mdev = TODO: 5.213/6.849/10.907/2.351 ms\n"
+		, data.canonname
+		, __progname
+		, count1
+		, count2
+		, ((double)count1 - (double)count2) / 100.
+		, total_time
+	); // TODO: terminar bien
+
+	while (!SLIST_EMPTY(&head)) {
+               node = SLIST_FIRST(&head);
+               SLIST_REMOVE_HEAD(&head, entries);
+               free(node);
+	}
+
 
 	destroy_connection_data(&data);
 	printf("TODO: data\n");
