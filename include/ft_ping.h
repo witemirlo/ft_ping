@@ -61,7 +61,7 @@ void destroy_connection_data(t_connection_data* data);
 t_flags get_flags(int argc, char* argv[]);
 
 // -- FLAGS --------------------------------------------------------------------
-void print_verbose_header(t_flags flags);
+void print_header(t_flags flag, t_connection_data* datas);
 
 // -- SIGNALS ------------------------------------------------------------------
 void signal_int(int sig);

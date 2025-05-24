@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
+#include <float.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
@@ -27,6 +28,7 @@ void routine_send(t_connection_data* const data, int fd)
 	init_icmp(&icmp);
 	status = 0;
 	count = 0;
+	// TODO: el tamaño del paquete
 	while (is_running) {
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
@@ -39,6 +41,9 @@ void routine_send(t_connection_data* const data, int fd)
 		count++;
 		sleep(1);
 	}
+	if (sendto(data->sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	}
 	destroy_connection_data(data);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
@@ -47,11 +52,14 @@ void routine_send(t_connection_data* const data, int fd)
 
 t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_t otime, uint32_t rtime)
 {
-	t_time_info    time_info = {0};
+	t_time_info    time_info;
 	struct timeval tv;
 	uint64_t       t1, t2;
 
 	gettimeofday(&tv, NULL);
+	time_info.min_time = DBL_MAX;
+	time_info.avg_time = 0;
+	time_info.max_time = 0;
 
 	// TODO: dado que son dos enteros de 32 bits, no seria lo mismo mover otime 32 bytes a la izquierda?
 	snprintf(buffer, buffer_len, "%lu%lu", tv.tv_sec, tv.tv_usec);
@@ -62,11 +70,12 @@ t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_
 
 	time_info.time =  (t1 - t2) / 1000.;
 
+	// TODO: no salen bien las estadisticas
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
 	time_info.max_time = (time_info.time > time_info.max_time) ? time_info.time : time_info.max_time;
 	time_info.avg_time = (time_info.avg_time + time_info.time) / count;
 
-	printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
+	// printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
 	return time_info;
 }
 
@@ -79,7 +88,10 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 
 	count = 0;
 	while (is_running) {
+		// TODO: cuando haces ping a localhost te manda dos paquetes de vuelta e imprime ambos, el original no
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), 0, (struct sockaddr*)&data->addr, &data->addr_len);
+		if (!is_running)
+			break;
 		if (bytes_readed <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
@@ -113,11 +125,8 @@ int main(int argc, char* argv[])
 	t_connection_data data;
 
 	flags = get_flags(argc, argv);
-	print_verbose_header(flags);
 	data = get_connection_data(argv[optind]);
-	printf("%s:%d: %s: %s (%d.%d.%d.%d)\n", __FILE__, __LINE__, __func__, data.canonname, (data.addr.sin_addr.s_addr & 0xff), ((data.addr.sin_addr.s_addr >> 8) & 0xff), ((data.addr.sin_addr.s_addr >> 16) & 0xff), ((data.addr.sin_addr.s_addr >> 24) & 0xff)); // TODO: el endianess
-	printf("%s:%d: %s: %s (%s)\n", __FILE__, __LINE__, __func__, data.canonname, data.ip_char);
-
+	print_header(flags, &data);
 	
 	// TODO: esto era para ver que era una direccion valida o para que?
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
@@ -173,21 +182,20 @@ int main(int argc, char* argv[])
 		/ packets_sent
 	);
 
-	printf("--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %f%% packet loss, time %fms\n"
-		"rtt min/avg/max = TODO: %.3f/%.3f/%.3f/ ms\n"
+	printf("\n--- %s %s statistics ---\n"
+		"%lu packets transmitted, %lu received, %.2f%% packet loss, time %dms\n"
+		"rtt min/avg/max = %.3f/%.3f/%.3f/ ms\n"
 		, data.canonname
 		, __progname
 		, packets_sent
 		, time_stats.packets_received
 		, packet_loss
-		, 42. // TODO: ver que es y calcular o modificar time_stats
+		, 42 // TODO: ver que es y calcular o modificar time_stats
 		, time_stats.min_time
 		, time_stats.avg_time
 		, time_stats.max_time
 	); // TODO: terminar bien
 
 	destroy_connection_data(&data);
-	printf("TODO: data\n");
 	return EXIT_SUCCESS;
 }

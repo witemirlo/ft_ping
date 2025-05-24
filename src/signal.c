@@ -12,7 +12,6 @@ void signal_int(int sig)
 	(void)sig;
 	is_running = false;
 
-	write(1, "\n", 1);
 	if (multipress) 
 		exit(EXIT_FAILURE);
 
