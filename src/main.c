@@ -68,7 +68,7 @@ t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_
 	snprintf(buffer, buffer_len, "%u%u", ntohl(otime), ntohl(rtime));
 	t2 = strtoull(buffer, NULL, 10);
 
-	time_info.time =  (t1 - t2) / 1000.;
+	time_info.time =  (t1 - t2) / 1000.; // TODO: ESTO DA UNAS BURRADAS DE TIEMPO A VECES
 
 	// TODO: no salen bien las estadisticas
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
@@ -178,12 +178,12 @@ int main(int argc, char* argv[])
 	// TODO: un waitpid o algo?
 
 	const double packet_loss = (
-		((packets_sent - (packets_sent - time_stats.packets_received)) * 100.)
+		((packets_sent - time_stats.packets_received) * 100.)
 		/ packets_sent
 	);
 
 	printf("\n--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %.2f%% packet loss, time %dms\n"
+		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %dms\n"
 		"rtt min/avg/max = %.3f/%.3f/%.3f/ ms\n"
 		, data.canonname
 		, __progname
