@@ -70,12 +70,13 @@ t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_
 
 	time_info.time =  (t1 - t2) / 1000.; // TODO: ESTO DA UNAS BURRADAS DE TIEMPO A VECES
 
+	printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
+	printf("%s:%d: average between (%.1f + %.1f) / %lu = %.1f\n", __FILE__, __LINE__, time_info.avg_time, time_info.time, count, ((time_info.avg_time + time_info.time) / count)); // TODO: BORRAR
+
 	// TODO: no salen bien las estadisticas
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
 	time_info.max_time = (time_info.time > time_info.max_time) ? time_info.time : time_info.max_time;
-	time_info.avg_time = (time_info.avg_time + time_info.time) / count;
-
-	// printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
+	time_info.avg_time = (time_info.avg_time + time_info.time) / count; // TODO: ESTE CALCULO ESTA MAL, se le tendra que pasar por puntero, ya que el primero siempre es 0
 	return time_info;
 }
 
