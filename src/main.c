@@ -89,6 +89,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 	count = 0;
 	while (is_running) {
 		// TODO: cuando haces ping a localhost te manda dos paquetes de vuelta e imprime ambos, el original no
+		errno = 0; // TODO: usar un multiplexer
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
 		if (!is_running)
 			break;
