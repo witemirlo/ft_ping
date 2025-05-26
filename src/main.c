@@ -165,7 +165,17 @@ int main(int argc, char* argv[])
 	}
 	// recibir ping
 	close(sv[0]);
+	// clock_t start = clock();
 	t_time_stats time_stats = routine_receive(&data, sv[1]);
+	// clock_t end = clock();
+
+	// fprintf(stderr, "%s:%d: (%ld - %ld = %ld) / %ld = %f\n", __FILE__, __LINE__
+	// 	, end
+	// 	, start
+	// 	, end - start
+	// 	, CLOCKS_PER_SEC
+	// 	, (end - start) / (double)CLOCKS_PER_SEC
+	// ); // TODO: BORRAR
 
 	size_t packets_sent;
 	if (recv(sv[1], &packets_sent, sizeof(packets_sent), 0) < 0) {
@@ -183,14 +193,14 @@ int main(int argc, char* argv[])
 	);
 
 	printf("\n--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %dms\n"
+		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %.0fms\n"
 		"rtt min/avg/max = %.3f/%.3f/%.3f ms\n"
 		, data.canonname
 		, __progname
 		, packets_sent
 		, time_stats.packets_received
 		, packet_loss
-		, 42 // TODO: ver que es y calcular o modificar time_stats
+		, ((time_stats.avg_time + 1000) * packets_sent) - 1000 // TODO: hardcode si hay packet loss no va a ir correctamente
 		, time_stats.min_time
 		, time_stats.avg_time
 		, time_stats.max_time
