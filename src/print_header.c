@@ -28,5 +28,5 @@ void print_header(t_flags flags, t_connection_data* data)
 			, data->canonname
 		);
 
-	printf("PING %s (%s) 56(84) bytes of data.\n", data->canonname, data->ip_char);
+	printf("PING %s (%s) 56(84) bytes of data.\n", data->canonname, data->ip_char); // TODO: harcoded, el primer numero es lo enviado - 20 (cabezera ip) - 8 (cabezera icmp)
 }

@@ -24,8 +24,10 @@ void routine_send(t_connection_data* const data, int fd)
 	struct icmp icmp;
 	size_t      count;
 	int         status;
+	char        msg[sizeof(icmp) + 36];
 
 	init_icmp(&icmp);
+	memset(msg, 0, sizeof(msg));
 
 	status = 0;
 	count = 0;
@@ -34,7 +36,9 @@ void routine_send(t_connection_data* const data, int fd)
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
 
-		if (sendto(data->sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+		memcpy(msg, &icmp, sizeof(icmp));
+		// if (sendto(data->sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+		if (sendto(data->sockfd, msg, sizeof(msg), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 			status = errno;
 			break;
