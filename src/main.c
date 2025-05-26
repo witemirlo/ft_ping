@@ -97,6 +97,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 			destroy_connection_data(data);
 			close(fd);
+			// TODO: enviar senal al hijo para que no deje huerfanos
 			exit(EXIT_FAILURE);
 		}
 		count++;
@@ -123,6 +124,7 @@ int main(int argc, char* argv[])
 {
 	t_flags           flags;
 	t_connection_data data;
+	struct timeval    tv_start, tv_end;
 
 	flags = get_flags(argc, argv);
 	data = get_connection_data(argv[optind]);
@@ -165,27 +167,17 @@ int main(int argc, char* argv[])
 	}
 	// recibir ping
 	close(sv[0]);
-	// clock_t start = clock();
+
+	gettimeofday(&tv_start, NULL);
 	t_time_stats time_stats = routine_receive(&data, sv[1]);
-	// clock_t end = clock();
-
-	// fprintf(stderr, "%s:%d: (%ld - %ld = %ld) / %ld = %f\n", __FILE__, __LINE__
-	// 	, end
-	// 	, start
-	// 	, end - start
-	// 	, CLOCKS_PER_SEC
-	// 	, (end - start) / (double)CLOCKS_PER_SEC
-	// ); // TODO: BORRAR
-
+	gettimeofday(&tv_end, NULL);
+	
 	size_t packets_sent;
 	if (recv(sv[1], &packets_sent, sizeof(packets_sent), 0) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		// TODO: hacer que retorne (liberando) un status de error
 	}
 	close(sv[1]);
-	// TODO: habría que enviar señal al proceso hijo?
-
-	// TODO: un waitpid o algo?
 
 	const double packet_loss = (
 		((packets_sent - time_stats.packets_received) * 100.)
@@ -193,14 +185,14 @@ int main(int argc, char* argv[])
 	);
 
 	printf("\n--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %.0fms\n"
+		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %ldms\n"
 		"rtt min/avg/max = %.3f/%.3f/%.3f ms\n"
 		, data.canonname
 		, __progname
 		, packets_sent
 		, time_stats.packets_received
 		, packet_loss
-		, ((time_stats.avg_time + 1000) * packets_sent) - 1000 // TODO: hardcode si hay packet loss no va a ir correctamente
+		, ((tv_end.tv_sec * 1000) + (tv_end.tv_usec / 1000)) - ((tv_start.tv_sec * 1000) + (tv_start.tv_usec / 1000)) // TODO: seguro que esto mide el tiempo total?
 		, time_stats.min_time
 		, time_stats.avg_time
 		, time_stats.max_time
