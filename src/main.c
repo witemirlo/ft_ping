@@ -52,14 +52,12 @@ void routine_send(t_connection_data* const data, int fd)
 
 t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_t otime, uint32_t rtime)
 {
-	t_time_info    time_info;
-	struct timeval tv;
-	uint64_t       t1, t2;
+	static t_time_info time_info = {.min_time = DBL_MAX, .avg_time = 0, .max_time = 0};
+	static double total_time = 0;
+	struct timeval     tv;
+	uint64_t           t1, t2;
 
 	gettimeofday(&tv, NULL);
-	time_info.min_time = DBL_MAX;
-	time_info.avg_time = 0;
-	time_info.max_time = 0;
 
 	// TODO: dado que son dos enteros de 32 bits, no seria lo mismo mover otime 32 bytes a la izquierda?
 	snprintf(buffer, buffer_len, "%lu%lu", tv.tv_sec, tv.tv_usec);
@@ -69,14 +67,14 @@ t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_
 	t2 = strtoull(buffer, NULL, 10);
 
 	time_info.time =  (t1 - t2) / 1000.; // TODO: ESTO DA UNAS BURRADAS DE TIEMPO A VECES
+	total_time += time_info.time;
 
 	printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
 	printf("%s:%d: average between (%.1f + %.1f) / %lu = %.1f\n", __FILE__, __LINE__, time_info.avg_time, time_info.time, count, ((time_info.avg_time + time_info.time) / count)); // TODO: BORRAR
 
-	// TODO: no salen bien las estadisticas
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
 	time_info.max_time = (time_info.time > time_info.max_time) ? time_info.time : time_info.max_time;
-	time_info.avg_time = (time_info.avg_time + time_info.time) / count; // TODO: ESTE CALCULO ESTA MAL, se le tendra que pasar por puntero, ya que el primero siempre es 0
+	time_info.avg_time = total_time / count; // TODO: ESTE CALCULO ESTA MAL, se le tendra que pasar por puntero, ya que el primero siempre es 0
 	return time_info;
 }
 
