@@ -26,6 +26,7 @@ void routine_send(t_connection_data* const data, int fd)
 	int         status;
 
 	init_icmp(&icmp);
+
 	status = 0;
 	count = 0;
 	// TODO: el tamaño del paquete
@@ -89,12 +90,13 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 	count = 0;
 	while (is_running) {
 		// TODO: cuando haces ping a localhost te manda dos paquetes de vuelta e imprime ambos, el original no
-		errno = 0; // TODO: usar un multiplexer
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
 		if (!is_running)
 			break;
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			errno = 0;
 			continue;
+		}
 		if (bytes_readed <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
