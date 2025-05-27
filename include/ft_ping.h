@@ -4,6 +4,8 @@
 # include <arpa/inet.h>
 # include <errno.h>
 # include <float.h>
+# include <linux/if_packet.h>
+# include <net/ethernet.h>
 # include <netdb.h>
 # include <netinet/ip.h>
 # include <netinet/ip_icmp.h>

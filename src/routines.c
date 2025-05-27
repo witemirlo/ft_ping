@@ -52,6 +52,11 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 			// TODO: enviar senal al hijo para que no deje huerfanos
 			exit(EXIT_FAILURE);
 		}
+		// TODO: trying to figure how to ignore the outgoing packages
+		// TODO: man 7 packet for stadisctics
+		if (((struct sockaddr_ll*)(&data->addr))->sll_pkttype == PACKET_OUTGOING) {
+			printf("\n%s:%d: PACKET_OUNGOING\n", __FILE__, __LINE__); // TODO: BORRAR
+		}
 		count++;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
