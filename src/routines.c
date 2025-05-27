@@ -61,7 +61,8 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 			, data->ip_char
 			, ntohs(packet.icmp.icmp_seq)
 			, packet.ip.ip_ttl
-			, time_info.time);
+			, time_info.time
+		);
 	}
 
 	return (t_time_stats){
@@ -96,7 +97,7 @@ void routine_send(t_connection_data* const data, int fd)
 			break;
 		}
 		count++;
-		sleep(1);
+		sleep(100);
 	}
 
 	destroy_connection_data(data);
