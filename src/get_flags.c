@@ -1,8 +1,3 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include "ft_ping.h"
 
 t_flags get_flags(int argc, char* argv[])

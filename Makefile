@@ -6,6 +6,7 @@ SRCS     := src/main.c\
 	    src/icmp.c\
 	    src/print_header.c\
 	    src/signal.c\
+	    src/routines.c\
 
 OBJS     := $(SRCS:.c=.o)
 

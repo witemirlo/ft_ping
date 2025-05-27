@@ -1,10 +1,3 @@
-#include <netinet/in.h>
-#include <netinet/ip_icmp.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include <time.h>
-
 #include "ft_ping.h"
 
 static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)

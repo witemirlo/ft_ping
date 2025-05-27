@@ -1,10 +1,3 @@
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 #include "ft_ping.h"
 
 void print_header(t_flags flags, t_connection_data* data)

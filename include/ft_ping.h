@@ -1,14 +1,24 @@
 #ifndef FT_PING_H
 # define FT_PING_H
 
+# include <arpa/inet.h>
+# include <errno.h>
+# include <float.h>
 # include <netdb.h>
-# include <netinet/in.h>
+# include <netinet/ip.h>
 # include <netinet/ip_icmp.h>
+# include <signal.h>
 # include <stdbool.h>
+# include <stddef.h>
 # include <stdint.h>
 # include <stdio.h>
+# include <stdlib.h>
+# include <string.h>
 # include <sys/socket.h>
-
+# include <sys/time.h>
+# include <sys/types.h>
+# include <time.h>
+# include <unistd.h>
 
 // GLOBALS ---------------------------------------------------------------------
 extern const char *__progname;
@@ -22,9 +32,9 @@ typedef enum e_flags {
 } t_flags;
 
 typedef struct s_complete_packet {
-	struct ip ip;
+	struct ip   ip;
 	struct icmp icmp;
-	char   payload[BUFSIZ - sizeof(struct ip) - sizeof(struct icmp)];
+	char        payload[BUFSIZ - sizeof(struct ip) - sizeof(struct icmp)];
 
 } t_complete_packet;
 
@@ -71,5 +81,9 @@ void signal_quit(int sig);
 void init_icmp(struct icmp* const icmp);
 void update_icmp(struct icmp* const icmp);
 void update_icmp_checksum(struct icmp* const icmp);
+
+// -- ROUTINES -----------------------------------------------------------------
+void routine_send(t_connection_data* const data, int fd);
+t_time_stats routine_receive(t_connection_data* const data, int fd);
 
 #endif

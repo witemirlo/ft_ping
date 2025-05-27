@@ -1,8 +1,4 @@
-
 #include "ft_ping.h"
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 bool is_running = true;
 bool multipress = false;
