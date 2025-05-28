@@ -1,5 +1,7 @@
 #include "ft_ping.h"
 
+uint16_t id = 0;
+
 static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)
 {
 	u_int32_t c = (u_int32_t)a + (u_int32_t)b;
@@ -12,16 +14,11 @@ static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)
 
 void init_icmp(struct icmp* const icmp)
 {
-        int n;
-
         memset(icmp, 0, sizeof(*icmp));
-
-        srand(time(NULL));
-        n = rand();
 
         icmp->icmp_type = ICMP_ECHO;
 	icmp->icmp_code = 0;
-	icmp->icmp_id = n;
+	icmp->icmp_id = id;
 }
 
 void update_icmp(struct icmp* const icmp)

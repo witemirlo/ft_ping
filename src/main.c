@@ -4,7 +4,10 @@ int main(int argc, char* argv[])
 {
 	t_flags           flags;
 	t_connection_data data;
-	struct timeval    tv_start, tv_end;
+
+	// TODO: mover a otro sitio
+	srand(time(NULL));
+        id = rand();
 
 	flags = get_flags(argc, argv);
 	data = get_connection_data(argv[optind]);
@@ -46,9 +49,7 @@ int main(int argc, char* argv[])
 	}
 
 	close(sv[0]);
-	gettimeofday(&tv_start, NULL);
 	t_time_stats time_stats = routine_receive(&data, sv[1]);
-	gettimeofday(&tv_end, NULL);
 	
 	size_t packets_sent;
 	if (recv(sv[1], &packets_sent, sizeof(packets_sent), 0) < 0) {
@@ -63,14 +64,13 @@ int main(int argc, char* argv[])
 	);
 
 	printf("\n--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %.1f%% packet loss, time %ldms\n"
-		"rtt min/avg/max = %.3f/%.3f/%.3f ms\n"
+		"%lu packets transmitted, %lu received, %.1f%% packet loss\n"
+		"round-trip min/avg/max = %.3f/%.3f/%.3f ms\n"
 		, data.canonname
 		, __progname
 		, packets_sent
 		, time_stats.packets_received
 		, packet_loss
-		, ((tv_end.tv_sec * 1000) + (tv_end.tv_usec / 1000)) - ((tv_start.tv_sec * 1000) + (tv_start.tv_usec / 1000)) // TODO: seguro que esto mide el tiempo total?
 		, time_stats.min_time
 		, time_stats.avg_time
 		, time_stats.max_time

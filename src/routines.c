@@ -9,7 +9,6 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 
 	gettimeofday(&tv, NULL);
 
-
 	snprintf(buffer, buffer_len, "%lu%lu", tv.tv_sec, tv.tv_usec);
 	t1 = strtoull(buffer, NULL, 10);
 
@@ -51,12 +50,13 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		}
 		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
 			continue;
+		// TODO: validar con el id
 		count++;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
-		getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
-		printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.2f ms\n"
+		// getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
+		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.2f ms\n"
 			, ntohs(packet.ip.ip_len)
-			, buffer
+			// , buffer
 			, data->ip_char
 			, ntohs(packet.icmp.icmp_seq)
 			, packet.ip.ip_ttl
