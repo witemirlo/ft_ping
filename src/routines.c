@@ -87,7 +87,7 @@ void routine_send(t_connection_data* const data, int fd)
 
 	status = 0;
 	count = 0;
-	while (is_running || count < max_count) {
+	while (is_running) {
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
 
