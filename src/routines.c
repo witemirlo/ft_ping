@@ -19,8 +19,6 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	time_info.time =  (t1 - t2) / 1000.; // TODO: ESTO DA UNAS BURRADAS DE TIEMPO A VECES
 	total_time += time_info.time;
 
-	printf("\n%s:%d: %lu - %lu = %f\n", __FILE__, __LINE__, t1, t2, time_info.time); // TODO: BORRAR
-
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
 	time_info.max_time = (time_info.time > time_info.max_time) ? time_info.time : time_info.max_time;
 	time_info.avg_time = total_time / count;
@@ -36,7 +34,6 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 
 	count = 0;
 	while (is_running) {
-		// TODO: cuando haces ping a localhost te manda dos paquetes de vuelta e imprime ambos, el original no
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
 		if (!is_running)
 			break;
@@ -52,11 +49,8 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 			// TODO: enviar senal al hijo para que no deje huerfanos
 			exit(EXIT_FAILURE);
 		}
-		// TODO: trying to figure how to ignore the outgoing packages
-		// TODO: man 7 packet for stadisctics
-		if (((struct sockaddr_ll*)(&data->addr))->sll_pkttype == PACKET_OUTGOING) {
-			printf("\n%s:%d: PACKET_OUNGOING\n", __FILE__, __LINE__); // TODO: BORRAR
-		}
+		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
+			continue;
 		count++;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
@@ -102,7 +96,7 @@ void routine_send(t_connection_data* const data, int fd)
 			break;
 		}
 		count++;
-		sleep(100);
+		sleep(1);
 	}
 
 	destroy_connection_data(data);
