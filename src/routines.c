@@ -101,7 +101,7 @@ void routine_send(t_connection_data* const data, int fd)
 		count++;
 		if (count >= max_count)
 			is_running = false;
-		sleep(1);
+		sleep(interval);
 	}
 
 	destroy_connection_data(data);

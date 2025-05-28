@@ -28,7 +28,7 @@ extern const char *__progname;
 extern bool is_running;
 extern uint16_t id;
 extern ssize_t max_count;
-
+extern unsigned int interval;
 
 // TYPES -----------------------------------------------------------------------
 typedef enum e_flags {
