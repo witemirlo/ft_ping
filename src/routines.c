@@ -50,11 +50,12 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		}
 		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
 			continue;
-		// TODO: validar con el id
+		if (packet.icmp.icmp_id != id)
+			continue;
 		count++;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		// getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
-		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.2f ms\n"
+		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
 			, ntohs(packet.ip.ip_len)
 			// , buffer
 			, data->ip_char
