@@ -56,15 +56,17 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
-		// getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
-		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
-			, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
-			// , buffer
-			, data->ip_char
-			, ntohs(packet.icmp.icmp_seq)
-			, packet.ip.ip_ttl
-			, time_info.time
-		);
+		if (flags & FLOOD)
+			write(1, "\b \b", 3);
+		else
+			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
+				, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
+				// , buffer
+				, data->ip_char
+				, ntohs(packet.icmp.icmp_seq)
+				, packet.ip.ip_ttl
+				, time_info.time
+			);
 	}
 
 	return (t_time_stats){
@@ -92,13 +94,15 @@ void routine_send(t_connection_data* const data, int fd)
 		update_icmp_checksum(&icmp);
 
 		memcpy(msg, &icmp, sizeof(icmp));
-		// if (sendto(data->sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+		// TODO: hacerlo no bloqueante
 		if (sendto(data->sockfd, msg, sizeof(msg), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 			status = errno;
 			break;
 		}
 		count++;
+		if (flags & FLOOD)
+			write(1, ".", 1);
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
 		sleep(interval);

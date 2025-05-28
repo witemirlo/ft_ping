@@ -53,6 +53,7 @@ void get_flags(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 			flags |= FLOOD;
+			interval = 0;
 			if (getuid() != 0) {
 				fprintf(stderr, "%s: TODO\n", __progname); // TODO: poner el mensaje que toca
 				exit(EXIT_FAILURE);
