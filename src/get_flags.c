@@ -2,10 +2,10 @@
 
 ssize_t max_count = -1;
 unsigned int interval = 1;
+t_flags flags = NO_FLAGS;
 
-t_flags get_flags(int argc, char* argv[])
+void get_flags(int argc, char* argv[])
 {
-	t_flags flags;
 	int     opt;
 
 	flags = NO_FLAGS;
@@ -82,6 +82,4 @@ t_flags get_flags(int argc, char* argv[])
 		fprintf(stderr, "%s: usage error: Destination address required\n", __progname);
 		exit(EXIT_FAILURE);
 	}
-
-	return flags;
 }

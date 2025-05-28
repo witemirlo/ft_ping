@@ -1,6 +1,6 @@
 #include "ft_ping.h"
 
-void print_header(t_flags flags, t_connection_data* data)
+void print_header(t_connection_data* data)
 {
 	printf("PING %s (%s) 56 data bytes", data->canonname, data->ip_char); // TODO: harcoded, el primer numero es lo enviado - 20 (cabezera ip) - 8 (cabezera icmp)
 	if (flags & VERBOSE_OUTPUT)

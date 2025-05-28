@@ -53,7 +53,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		if (packet.icmp.icmp_id != id)
 			continue;
 		count++;
-		if (count >= max_count)
+		if (max_count > 0 && count >= max_count)
 			is_running = false;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		// getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
@@ -99,7 +99,7 @@ void routine_send(t_connection_data* const data, int fd)
 			break;
 		}
 		count++;
-		if (count >= max_count)
+		if (max_count > 0 && count >= max_count)
 			is_running = false;
 		sleep(interval);
 	}

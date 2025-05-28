@@ -23,13 +23,6 @@
 # include <time.h>
 # include <unistd.h>
 
-// GLOBALS ---------------------------------------------------------------------
-extern const char *__progname;
-extern bool is_running;
-extern uint16_t id;
-extern ssize_t max_count;
-extern unsigned int interval;
-
 // TYPES -----------------------------------------------------------------------
 typedef enum e_flags {
 	NO_FLAGS = 0x0,
@@ -69,6 +62,13 @@ typedef struct s_time_stats {
 	size_t packets_received;
 } t_time_stats;
 
+// GLOBALS ---------------------------------------------------------------------
+extern const char *__progname;
+extern bool is_running;
+extern uint16_t id;
+extern ssize_t max_count;
+extern unsigned int interval;
+extern t_flags flags;
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------
 // -- CONNECTION DATA ----------------------------------------------------------
@@ -76,10 +76,10 @@ t_connection_data get_connection_data(char const* const addr);
 void destroy_connection_data(t_connection_data* data);
 
 // -- PARSING ------------------------------------------------------------------
-t_flags get_flags(int argc, char* argv[]);
+void get_flags(int argc, char* argv[]);
 
 // -- FLAGS --------------------------------------------------------------------
-void print_header(t_flags flag, t_connection_data* datas);
+void print_header(t_connection_data* data);
 
 // -- SIGNALS ------------------------------------------------------------------
 void signal_int(int sig);

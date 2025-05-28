@@ -2,16 +2,15 @@
 
 int main(int argc, char* argv[])
 {
-	t_flags           flags;
 	t_connection_data data;
 
 	// TODO: mover a otro sitio
 	srand(time(NULL));
         id = rand();
 
-	flags = get_flags(argc, argv);
+	get_flags(argc, argv);
 	data = get_connection_data(argv[optind]);
-	print_header(flags, &data);
+	print_header(&data);
 	
 	// TODO: esto era para ver que era una direccion valida o para que?
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
