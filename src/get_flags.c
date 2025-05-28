@@ -26,7 +26,7 @@ t_flags get_flags(int argc, char* argv[])
 			optind++;
 			break;
 		case 'i':
-			if (flags | FLOOD) {
+			if (flags & FLOOD) {
 				fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
 				exit(EXIT_FAILURE);
 			}
@@ -48,7 +48,7 @@ t_flags get_flags(int argc, char* argv[])
 			break;
 		case 'f':
 			// TODO: IMPLEMENTARLO
-			if (flags | INTERVAL) {
+			if (flags & INTERVAL) {
 				fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
 				exit(EXIT_FAILURE);
 			}
