@@ -15,13 +15,14 @@ t_flags get_flags(int argc, char* argv[])
 			break;
 		case 'c':
 			// TODO: HACER FUNCION VALIDADORA
-			for (unsigned int i = 0; argv[optind]; i++) {
+			for (unsigned int i = 0; argv[optind][i]; i++) {
 				if (!isdigit(argv[optind][i])) {
 					fprintf(stderr, "%s: invalid valude (`%s' near `%s')\n", __progname, argv[optind], argv[optind] + i);
 					exit(EXIT_FAILURE);
 				}
 			}
 			max_count = atol(argv[optind]);
+			optind++;
 			break;
 		default:
 			printf(
