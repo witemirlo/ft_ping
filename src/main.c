@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 		/ packets_sent
 	);
 
-	printf("\n--- %s %s statistics ---\n"
+	printf("--- %s %s statistics ---\n"
 		"%lu packets transmitted, %lu received, %.1f%% packet loss\n"
 		"round-trip min/avg/max = %.3f/%.3f/%.3f ms\n"
 		, data.canonname
