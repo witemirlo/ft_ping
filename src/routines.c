@@ -58,7 +58,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		// getnameinfo((struct sockaddr const *)&data->addr, data->addr_len, buffer, sizeof(buffer), NULL, 0, 0);
 		printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
-			, ntohs(packet.ip.ip_len)
+			, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
 			// , buffer
 			, data->ip_char
 			, ntohs(packet.icmp.icmp_seq)
