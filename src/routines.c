@@ -28,11 +28,11 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
-	size_t            bytes_readed, count;
+	ssize_t            bytes_readed, count;
 	t_time_info       time_info;
 
 	count = 0;
-	while (is_running) {
+	while (is_running || count < max_count) {
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
 		if (!is_running)
 			break;
@@ -76,7 +76,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 void routine_send(t_connection_data* const data, int fd)
 {
 	struct icmp icmp;
-	size_t      count;
+	ssize_t      count;
 	int         status;
 	char        msg[sizeof(icmp) + 36];
 
@@ -85,7 +85,7 @@ void routine_send(t_connection_data* const data, int fd)
 
 	status = 0;
 	count = 0;
-	while (is_running) {
+	while (is_running || count < max_count) {
 		update_icmp(&icmp);
 		update_icmp_checksum(&icmp);
 

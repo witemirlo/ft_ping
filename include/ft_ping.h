@@ -2,6 +2,7 @@
 # define FT_PING_H
 
 # include <arpa/inet.h>
+# include <ctype.h>
 # include <errno.h>
 # include <float.h>
 # include <linux/if_packet.h>
@@ -26,6 +27,7 @@
 extern const char *__progname;
 extern bool is_running;
 extern uint16_t id;
+extern ssize_t max_count;
 
 
 // TYPES -----------------------------------------------------------------------
