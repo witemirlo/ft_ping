@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
 		/ packets_sent
 	);
 
+	// TODO: CON EL FLOOD SALEN UNOS NUMEROS DEMASIADO GRANDES
 	printf("--- %s %s statistics ---\n"
 		"%lu packets transmitted, %lu received, %.1f%% packet loss\n"
 		"round-trip min/avg/max = %.3f/%.3f/%.3f ms\n"
