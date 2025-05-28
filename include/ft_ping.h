@@ -33,7 +33,10 @@ extern ssize_t max_count;
 // TYPES -----------------------------------------------------------------------
 typedef enum e_flags {
 	NO_FLAGS = 0x0,
-	VERBOSE_OUTPUT = 0x1
+	VERBOSE_OUTPUT = 0x1,
+	COUNT = 0x2,
+	FLOOD = 0x4,
+	INTERVAL = 0x8
 } t_flags;
 
 typedef struct s_complete_packet {

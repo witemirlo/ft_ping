@@ -26,13 +26,19 @@ t_flags get_flags(int argc, char* argv[])
 			break;
 		default:
 			printf(
-				"\n"
-				"Usage\n"
-				"  ping [options] <destination>\n"
-				"\n"
-				"Options:\n"
-				"  <destination>      DNS name or IP address\n"
-				"  -v                 verbose output\n"
+				"Usage: %s [OPTION...] HOST ...\n"
+				"Send ICMP ECHO_REQUEST packets to network hosts.\n"
+				" \nOptions valid for all request types:\n\n"
+				"  -c, NUMBER                 stop after sending NUMBER packets\n"
+				"  -i, --interval=NUMBER      wait NUMBER seconds between sending each packet\n"
+				" \nOptions valid for --echo requests:\n\n"
+				"  -f,                        flood ping (root only)\n"
+				"  -v,                        verbose output\n"
+				"  -?,                        give this help list\n"
+				"\nMandatory or optional arguments to long options are also mandatory or optional\n"
+				"for any corresponding short options.\n"
+				"\nOptions marked with (root only) are available only to superuser.\n"
+				, __progname
 			);
 			exit(EXIT_SUCCESS);
 		}
