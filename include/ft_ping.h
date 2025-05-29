@@ -66,8 +66,8 @@ typedef struct s_time_stats {
 extern const char *__progname;
 extern bool is_running;
 extern uint16_t id;
-extern ssize_t max_count;
-extern unsigned int interval;
+extern int64_t max_count;
+extern int64_t interval;
 extern t_flags flags;
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------

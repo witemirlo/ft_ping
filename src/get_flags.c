@@ -1,8 +1,20 @@
 #include "ft_ping.h"
 
-ssize_t max_count = -1;
-unsigned int interval = 1;
+int64_t max_count = -1;
+int64_t interval = 1;
 t_flags flags = NO_FLAGS;
+
+static int64_t parse_num(char const* str)
+{
+	for (size_t i = 0; str[i]; i++) {
+		if (!isdigit(str[i])) {
+			fprintf(stderr, "%s: invalid valude (`%s' near `%s')\n", __progname, str, str + i);
+			return -1;
+		}
+	}
+
+	return atol(str);
+}
 
 void get_flags(int argc, char* argv[])
 {
@@ -15,14 +27,10 @@ void get_flags(int argc, char* argv[])
 			flags |= VERBOSE_OUTPUT;
 			break;
 		case 'c':
-			// TODO: HACER FUNCION VALIDADORA
-			for (unsigned int i = 0; argv[optind][i]; i++) {
-				if (!isdigit(argv[optind][i])) {
-					fprintf(stderr, "%s: invalid valude (`%s' near `%s')\n", __progname, argv[optind], argv[optind] + i);
-					exit(EXIT_FAILURE);
-				}
-			}
-			max_count = atol(argv[optind]);
+			max_count = parse_num(argv[optind]);
+			fprintf(stderr, "%s:%d: %ld\n", __FILE__, __LINE__, max_count); // TODO: BORRAR
+			if (max_count < 0)
+				exit(EXIT_FAILURE);
 			optind++;
 			break;
 		case 'i':
@@ -31,23 +39,19 @@ void get_flags(int argc, char* argv[])
 				exit(EXIT_FAILURE);
 			}
 
-			// TODO: HACER FUNCION VALIDADORA
-			flags |= INTERVAL;
-			for (unsigned int i = 0; argv[optind][i]; i++) {
-				if (!isdigit(argv[optind][i])) {
-					fprintf(stderr, "%s: invalid valude (`%s' near `%s')\n", __progname, argv[optind], argv[optind] + i);
+			interval = parse_num(argv[optind]);
+			if (interval < 1) {
+				switch (interval) {
+				case 0:
+					fprintf(stderr, "%s: value too small: %ld\n", __progname, interval);
+					/* FALLTHRU */
+				default:
 					exit(EXIT_FAILURE);
 				}
-			}
-			interval = atol(argv[optind]);
-			if (interval < 1) {
-				fprintf(stderr, "%s: value too small: %d\n", __progname, interval);
-				exit(EXIT_FAILURE);
 			}
 			optind++;
 			break;
 		case 'f':
-			// TODO: IMPLEMENTARLO
 			if (flags & INTERVAL) {
 				fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
 				exit(EXIT_FAILURE);
