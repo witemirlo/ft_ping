@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	srand(time(NULL));
         id = rand();
 
-	get_flags(argc, argv);
+	parser(argc, argv);
 	data = get_connection_data(argv[optind]);
 	print_header(&data);
 	

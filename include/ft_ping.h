@@ -76,7 +76,7 @@ t_connection_data get_connection_data(char const* const addr);
 void destroy_connection_data(t_connection_data* data);
 
 // -- PARSING ------------------------------------------------------------------
-void get_flags(int argc, char* argv[]);
+void parser(int argc, char* argv[]);
 
 // -- FLAGS --------------------------------------------------------------------
 void print_header(t_connection_data* data);
