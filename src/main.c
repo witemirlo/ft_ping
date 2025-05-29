@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
 	// TODO: CON EL FLOOD SALEN UNOS NUMEROS DEMASIADO GRANDES
 	printf("--- %s %s statistics ---\n"
-		"%lu packets transmitted, %lu received, %.1f%% packet loss\n"
+		"%lu packets transmitted, %lu packets received, %.1f%% packet loss\n"
 		"round-trip min/avg/max = %.3f/%.3f/%.3f ms\n"
 		, data.canonname
 		, __progname
