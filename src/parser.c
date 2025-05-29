@@ -1,7 +1,7 @@
 #include "ft_ping.h"
 
 int64_t max_count = -1;
-int64_t interval = 1;
+int64_t interval = 1000000;
 t_flags flags = NO_FLAGS;
 
 static int64_t parse_num(char const* const str)
@@ -37,7 +37,7 @@ static void case_i(char const* const str)
 		exit(EXIT_FAILURE);
 	}
 
-	interval = parse_num(str);
+	interval = parse_num(str); // TODO: ahora que son microsegundos, admitir decimales
 	if (interval < 1) {
 		switch (interval) {
 		case 0:
@@ -47,6 +47,7 @@ static void case_i(char const* const str)
 			exit(EXIT_FAILURE);
 		}
 	}
+	interval *= 1000000;
 	optind++;
 }
 
@@ -54,7 +55,7 @@ static void case_f(char const* const str)
 {
 	(void)str;
 	flags |= FLOOD;
-	interval = 0;
+	interval = (60. / 100.) * 1000000;
 
 	if (flags & INTERVAL) {
 		fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
