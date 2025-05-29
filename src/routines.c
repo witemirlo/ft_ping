@@ -28,7 +28,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
-	ssize_t            bytes_readed, count;
+	ssize_t           bytes_readed, count;
 	t_time_info       time_info;
 
 	count = 0;
@@ -80,7 +80,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 void routine_send(t_connection_data* const data, int fd)
 {
 	struct icmp icmp;
-	ssize_t      count;
+	ssize_t     count;
 	int         status;
 	char        msg[sizeof(icmp) + 36];
 

@@ -23,7 +23,7 @@ void init_icmp(struct icmp* const icmp)
 
 void update_icmp(struct icmp* const icmp)
 {
-        static uint16_t seq = 0;
+        static uint16_t       seq = 0;
 	static struct timeval tv = {0};
 
 	if (gettimeofday(&tv, NULL) < 0) {
