@@ -4,10 +4,15 @@ int64_t max_count = -1;
 int64_t interval = 1000000;
 t_flags flags = NO_FLAGS;
 
-static int64_t parse_num(char const* const str)
+static int64_t parse_num(char const* const str, bool comma)
 {
+	comma = false;
 	for (size_t i = 0; str[i]; i++) {
 		if (!isdigit(str[i])) {
+			if (comma && str[i] == '.') {
+				comma = false;
+				continue;
+			}
 			fprintf(stderr, "%s: invalid value (`%s' near `%s')\n", __progname, str, str + i);
 			return -1;
 		}
@@ -24,7 +29,7 @@ static void case_v(char const* const str)
 
 static void case_c(char const* const str)
 {
-	max_count = parse_num(str);
+	max_count = parse_num(str, false);
 	if (max_count < 0)
 		exit(EXIT_FAILURE);
 	optind++;
@@ -37,7 +42,7 @@ static void case_i(char const* const str)
 		exit(EXIT_FAILURE);
 	}
 
-	interval = parse_num(str); // TODO: ahora que son microsegundos, admitir decimales
+	interval = parse_num(str, true); // TODO: ahora que son microsegundos, admitir decimales
 	if (interval < 1) {
 		switch (interval) {
 		case 0:
