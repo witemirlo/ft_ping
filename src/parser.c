@@ -6,7 +6,6 @@ t_flags flags = NO_FLAGS;
 
 static int64_t parse_num(char const* const str, bool comma)
 {
-	comma = false;
 	for (size_t i = 0; str[i]; i++) {
 		if (!isdigit(str[i])) {
 			if (comma && str[i] == '.') {
