@@ -29,7 +29,8 @@ typedef enum e_flags {
 	VERBOSE_OUTPUT = 0x1,
 	COUNT = 0x2,
 	FLOOD = 0x4,
-	INTERVAL = 0x8
+	INTERVAL = 0x8,
+	QUIET = 0x16
 } t_flags;
 
 typedef struct s_complete_packet {

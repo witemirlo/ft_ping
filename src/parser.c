@@ -7,7 +7,7 @@ t_flags flags = NO_FLAGS;
 static int64_t parse_num(char const* const str, bool comma, int muliplier)
 {
 	for (size_t i = 0; str[i]; i++) {
-		if (!isdigit(str[i])) {
+		if (!isdigit(str[i])) { // TODO: refactor
 			if (comma && str[i] == '.') {
 				comma = false;
 				continue;
@@ -57,7 +57,7 @@ static void case_f(char const* const str)
 {
 	(void)str;
 	flags |= FLOOD;
-	interval = (60. / 100.) * 1000000;
+	interval = (60. / 100.) * 1000; // TODO: revisar los numeros
 
 	if (flags & INTERVAL) {
 		fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
@@ -68,6 +68,12 @@ static void case_f(char const* const str)
 		fprintf(stderr, "%s: TODO\n", __progname); // TODO: poner el mensaje que toca
 		exit(EXIT_FAILURE);
 	}
+}
+
+static void case_q(char const* const str)
+{
+	(void)str;
+	flags |= QUIET;
 }
 
 static void case_default(char const* const str)
@@ -82,6 +88,7 @@ static void case_default(char const* const str)
 		"  -i NUMBER                  wait NUMBER seconds between sending each packet\n"
 		" \nOptions valid for --echo requests:\n\n"
 		"  -f                         flood ping (root only)\n"
+		"  -q                         quiet output\n"
 		"  -v                         verbose output\n"
 		"  -?                         give this help list\n"
 		"\nMandatory or optional arguments to long options are also mandatory or optional\n"
@@ -99,6 +106,7 @@ static uint8_t get_case(char c)
 		case 'c': return 2;
 		case 'i': return 3;
 		case 'f': return 4;
+		case 'q': return 5;
 		default:  return 0;
 	}
 }
@@ -110,12 +118,13 @@ void parser(int argc, char* argv[])
 		case_v,
 		case_c,
 		case_i,
-		case_f
+		case_f,
+		case_q
 	};
 	int opt;
 
 	flags = NO_FLAGS;
-	while ((opt = getopt(argc, argv, "?vcfi")) > 0)
+	while ((opt = getopt(argc, argv, "?vcfiqf")) > 0)
 		(cases[get_case(opt)])(argv[optind]);
 
 	if (optind >= argc) {

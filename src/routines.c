@@ -24,7 +24,7 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
-t_time_stats routine_receive(t_connection_data* const data, int fd)
+t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
@@ -56,7 +56,9 @@ t_time_stats routine_receive(t_connection_data* const data, int fd)
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
-		if (flags & FLOOD)
+		if (flags & QUIET)
+			continue;
+		else if (flags & FLOOD)
 			write(1, "\b \b", 3);
 		else
 			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
@@ -101,7 +103,8 @@ void routine_send(t_connection_data* const data, int fd)
 			break;
 		}
 		count++;
-		if (flags & FLOOD)
+		if (flags & QUIET) {
+		} else if (flags & FLOOD)
 			write(1, ".", 1);
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
