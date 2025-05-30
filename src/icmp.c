@@ -12,16 +12,7 @@ static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)
         return c;
 }
 
-void init_icmp(struct icmp* const icmp)
-{
-        memset(icmp, 0, sizeof(*icmp));
-
-        icmp->icmp_type = ICMP_ECHO;
-	icmp->icmp_code = 0;
-	icmp->icmp_id = id;
-}
-
-void update_icmp(struct icmp* const icmp)
+static void icmp_timestamp(struct icmp* const icmp)
 {
         static uint16_t       seq = 0;
 	static struct timeval tv = {0};
@@ -36,7 +27,7 @@ void update_icmp(struct icmp* const icmp)
         seq++;
 }
 
-void update_icmp_checksum(struct icmp* const icmp)
+void icmp_checksum(struct icmp* const icmp, void const* const payload, size_t payload_size)
 {
 	icmp->icmp_cksum = 0;
 
@@ -50,5 +41,25 @@ void update_icmp_checksum(struct icmp* const icmp)
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime >> 16));
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime & 0xffff));
 
+	for (size_t i = 0; i < payload_size; i++) {
+		fprintf(stderr, "%s:%d: payload[%ld] = %d\n", __FILE__, __LINE__, i, ((uint8_t*)payload)[i]); // TODO: BORRAR
+		icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i]);
+	}
+
 	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;
+}
+
+void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size)
+{
+	icmp_timestamp(icmp);
+	icmp_checksum(icmp, payload, payload_size);
+}
+
+void init_icmp(struct icmp* const icmp)
+{
+        memset(icmp, 0, sizeof(*icmp));
+
+        icmp->icmp_type = ICMP_ECHO;
+	icmp->icmp_code = 0;
+	icmp->icmp_id = id;
 }

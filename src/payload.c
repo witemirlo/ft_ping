@@ -37,46 +37,65 @@ static bool valid_hex_number(char const* const str)
 
 bool init_payload(char const* const str)
 {
-	// 112233445566778899aabbccddeeff42 como maximo
 	uint8_t i, str_size;
 
 	if (!valid_hex_number(str))
-		return NULL;
+		return false;
 
 	str_size = get_size(str);
 	for (i = 0; i < str_size; i++) {
-		payload_pattern.pattern[i] = hexchar_to_int(str[i]); 
+		if (i % 2 == 1) {
+			payload_pattern.pattern[i - 1] <<= 4; 
+			payload_pattern.pattern[i - 1] |= hexchar_to_int(str[i]); 
+		} else
+			payload_pattern.pattern[i] = hexchar_to_int(str[i]); 
 	}
 
-	// payload_pattern.size = (str_size % 2 == 0) ? j : j + 1;
+	// old
 	payload_pattern.size = str_size;
+
+	// new
+	// if (str_size < 32 && str_size % 2 != 0) {
+	// 	payload_pattern.pattern[str_size] = payload_pattern.pattern[str_size - 1];
+	// 	payload_pattern.pattern[str_size - 1] = 0;
+	// 	payload_pattern.size++;
+	// }
 	return true;
 }
 
-// void set_payload(void* buffer, size_t size)
-// {
-// 	size_t i;
-
-// 	i = 0;
-// 	while (i < size) {
-// 		((uint8_t)buffer)[i] = (i % 2)
-// 		i++;
-// 	}
-// }
-
-int main(int argc, char** argv)
+void set_payload(void* buffer, size_t size)
 {
-	// for (int i = 0; argv[1][i]; i++)
-	// 	printf("%d ", hexchar_to_int(argv[1][i]));
-	// printf("\n");
+	// TODO: no hace lo que toca
+	size_t i;
 
-	init_payload(argv[1]);
-
-	printf("size: %d\n", payload_pattern.size);
-
-	for (uint8_t i = 0; i < payload_pattern.size; i++) {
-		printf("%x ", payload_pattern.pattern[i]);
+	for (i = 0; i < size; i++) {
+		// TODO: probablemente tiene que hacerse operaciones de bits
+		((uint8_t*)buffer)[i] = payload_pattern.pattern[i % payload_pattern.size];
 	}
-
-	printf("\n");
 }
+
+// TODO: borrar
+// int main(int argc, char** argv)
+// {
+// 	char buffer[41];
+
+// 	init_payload(argv[1]);
+
+// 	printf("size: %d\n", payload_pattern.size);
+
+// 	// for (uint8_t i = 0; i < payload_pattern.size; i++) {
+// 	// 	printf("%x ", payload_pattern.pattern[i]);
+// 	// }
+// 	// printf("\n");
+
+// 	set_payload(buffer, sizeof(buffer));
+
+// 	for (size_t i = 0; i < sizeof(buffer); i++) {
+// 		if (i % 2 == 0)
+// 			printf("%x", buffer[i]);
+// 		else
+// 			printf("%x ", buffer[i]);
+// 	}
+// 	printf("\n");
+
+// }

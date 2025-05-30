@@ -84,16 +84,19 @@ void routine_send(t_connection_data* const data, int fd)
 	struct icmp icmp;
 	ssize_t     count;
 	int         status;
-	char        msg[sizeof(icmp) + 36];
+	char        msg[sizeof(icmp) + 36]; // TODO: hacer typedef msg
 
 	init_icmp(&icmp);
-	memset(msg + sizeof(icmp), 0, sizeof(msg));
+	memset(msg + sizeof(icmp), 0, sizeof(msg) - sizeof(icmp));
 
 	status = 0;
 	count = 0;
+
+	init_payload("0"); // TODO: deberia ir en el parser
+	set_payload(msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
 	while (is_running) {
-		update_icmp(&icmp);
-		update_icmp_checksum(&icmp);
+		update_icmp(&icmp, msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
+		// update_icmp_checksum(&icmp);
 
 		memcpy(msg, &icmp, sizeof(icmp));
 		// TODO: hacerlo no bloqueante

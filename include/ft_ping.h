@@ -93,11 +93,14 @@ void signal_quit(int sig);
 
 // -- ICMP PAQUETS -------------------------------------------------------------
 void init_icmp(struct icmp* const icmp);
-void update_icmp(struct icmp* const icmp);
-void update_icmp_checksum(struct icmp* const icmp);
+void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size);
 
 // -- ROUTINES -----------------------------------------------------------------
 void routine_send(t_connection_data* const data, int fd);
 t_time_stats routine_receive(t_connection_data* const data, int fd);
+
+// -- PAYLOAD ------------------------------------------------------------------
+bool init_payload(char const* const str);
+void set_payload(void* buffer, size_t size);
 
 #endif
