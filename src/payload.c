@@ -37,29 +37,25 @@ static bool valid_hex_number(char const* const str)
 
 bool init_payload(char const* const str)
 {
-	uint8_t i, str_size;
+	uint8_t i, j, str_size;
 
 	if (!valid_hex_number(str))
 		return false;
 
 	str_size = get_size(str);
-	for (i = 0; i < str_size; i++) {
-		if (i % 2 == 1) {
-			payload_pattern.pattern[i - 1] <<= 4; 
-			payload_pattern.pattern[i - 1] |= hexchar_to_int(str[i]); 
-		} else
-			payload_pattern.pattern[i] = hexchar_to_int(str[i]); 
+	for (i = 0, j = 0; i < str_size; i++) {
+		if (i % 2 == 0)
+			payload_pattern.pattern[j] = hexchar_to_int(str[i]); 
+		else {
+			payload_pattern.pattern[j]<<= 4; 
+			payload_pattern.pattern[j] |= hexchar_to_int(str[i]); 
+			j++;
+		}
 	}
 
-	// old
-	payload_pattern.size = str_size;
-
-	// new
-	// if (str_size < 32 && str_size % 2 != 0) {
-	// 	payload_pattern.pattern[str_size] = payload_pattern.pattern[str_size - 1];
-	// 	payload_pattern.pattern[str_size - 1] = 0;
-	// 	payload_pattern.size++;
-	// }
+	payload_pattern.size = (str_size % 2 == 0) ? j : j + 1; // TODO: los calculos bien
+	fprintf(stderr, "%s:%d: \"%s\" (%d) -> %d\n", __FILE__, __LINE__, str, str_size, j); // TODO: BORRAR
+	
 	return true;
 }
 
@@ -75,27 +71,30 @@ void set_payload(void* buffer, size_t size)
 }
 
 // TODO: borrar
-// int main(int argc, char** argv)
-// {
-// 	char buffer[41];
+int main(int argc, char** argv)
+{
+	char buffer[41];
 
-// 	init_payload(argv[1]);
+	init_payload(argv[1]);
 
-// 	printf("size: %d\n", payload_pattern.size);
+	printf("size: %d\n", payload_pattern.size);
+	for (size_t i = 0; i < payload_pattern.size; i++)
+		printf("%x%x ", payload_pattern.pattern[i] >> 4, payload_pattern.pattern[i] & 0xf);
+	printf("\n");
 
-// 	// for (uint8_t i = 0; i < payload_pattern.size; i++) {
-// 	// 	printf("%x ", payload_pattern.pattern[i]);
-// 	// }
-// 	// printf("\n");
+	// for (uint8_t i = 0; i < payload_pattern.size; i++) {
+	// 	printf("%x ", payload_pattern.pattern[i]);
+	// }
+	// printf("\n");
 
-// 	set_payload(buffer, sizeof(buffer));
+	// set_payload(buffer, sizeof(buffer));
 
-// 	for (size_t i = 0; i < sizeof(buffer); i++) {
-// 		if (i % 2 == 0)
-// 			printf("%x", buffer[i]);
-// 		else
-// 			printf("%x ", buffer[i]);
-// 	}
-// 	printf("\n");
+	// for (size_t i = 0; i < sizeof(buffer); i++) {
+	// 	if (i % 2 == 0)
+	// 		printf("%x", buffer[i]);
+	// 	else
+	// 		printf("%x ", buffer[i]);
+	// }
+	printf("\n");
 
-// }
+}

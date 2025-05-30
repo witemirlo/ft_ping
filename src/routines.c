@@ -92,7 +92,7 @@ void routine_send(t_connection_data* const data, int fd)
 	status = 0;
 	count = 0;
 
-	init_payload("0"); // TODO: deberia ir en el parser
+	init_payload("123"); // TODO: deberia ir en el parser
 	set_payload(msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
 	while (is_running) {
 		update_icmp(&icmp, msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
