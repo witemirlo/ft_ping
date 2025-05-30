@@ -76,6 +76,13 @@ static void case_q(char const* const str)
 	flags |= QUIET;
 }
 
+static void case_p(char const* const str)
+{
+	(void)str;
+	init_payload(str); // TODO: control de errores
+	optind++;
+}
+
 static void case_default(char const* const str)
 {
 	(void)str;
@@ -88,6 +95,7 @@ static void case_default(char const* const str)
 		"  -i NUMBER                  wait NUMBER seconds between sending each packet\n"
 		" \nOptions valid for --echo requests:\n\n"
 		"  -f                         flood ping (root only)\n"
+		"  -p PATTERN                 fill ICMP packet with given pattern (hex)"
 		"  -q                         quiet output\n"
 		"  -v                         verbose output\n"
 		"  -?                         give this help list\n"
@@ -107,6 +115,7 @@ static uint8_t get_case(char c)
 		case 'i': return 3;
 		case 'f': return 4;
 		case 'q': return 5;
+		case 'p': return 6;
 		default:  return 0;
 	}
 }
@@ -119,12 +128,14 @@ void parser(int argc, char* argv[])
 		case_c,
 		case_i,
 		case_f,
-		case_q
+		case_q,
+		case_p
 	};
 	int opt;
 
+	init_payload("0");
 	flags = NO_FLAGS;
-	while ((opt = getopt(argc, argv, "?vcfiqf")) > 0)
+	while ((opt = getopt(argc, argv, "?vcfiqfp")) > 0)
 		(cases[get_case(opt)])(argv[optind]);
 
 	if (optind >= argc) {
