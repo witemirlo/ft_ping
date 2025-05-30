@@ -65,7 +65,7 @@ typedef struct s_time_stats {
 
 typedef struct s_payload_pattern {
 	uint8_t size;
-	uint16_t pattern[8];
+	uint16_t pattern[16];
 } t_payload_pattern;
 
 // GLOBALS ---------------------------------------------------------------------
