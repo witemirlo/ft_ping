@@ -21,26 +21,25 @@ static uint8_t hexchar_to_int(unsigned char c)
 		return c - 'W';
 }
 
-static bool valid_hex_number(char const* const str)
+static void validate_hex_number(char const* const str)
 {
 	const char valid_chars[] = "0123456789abcdefABCDEF";
 	uint8_t    i, str_size;
 
 	str_size = get_size(str);
 	for (i = 0; i < str_size; i++) {
-		if (strchr(valid_chars, str[i]) == NULL)
-			return false;
+		if (strchr(valid_chars, str[i]) == NULL) {
+			fprintf(stderr, "%s: error in pattern near %c\n", __progname, str[i]);
+			exit(EXIT_FAILURE);
+		}
 	}
-
-	return true;
 }
 
-bool init_payload(char const* const str)
+void init_payload(char const* const str)
 {
 	uint8_t i, j, str_size;
 
-	if (!valid_hex_number(str))
-		return false;
+	validate_hex_number(str);
 
 	str_size = get_size(str);
 	for (i = 0, j = 0; i < str_size; i++) {
@@ -54,7 +53,6 @@ bool init_payload(char const* const str)
 	}
 
 	payload_pattern.size = (str_size % 2 == 0) ? j : j + 1;
-	return true;
 }
 
 void set_payload(void* buffer, size_t size)

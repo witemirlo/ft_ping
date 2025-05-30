@@ -100,7 +100,7 @@ void routine_send(t_connection_data* const data, int fd);
 t_time_stats routine_receive(t_connection_data* const data, int fd);
 
 // -- PAYLOAD ------------------------------------------------------------------
-bool init_payload(char const* const str);
+void init_payload(char const* const str);
 void set_payload(void* buffer, size_t size);
 
 #endif

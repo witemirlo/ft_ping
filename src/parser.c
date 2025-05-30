@@ -79,7 +79,7 @@ static void case_q(char const* const str)
 static void case_p(char const* const str)
 {
 	(void)str;
-	init_payload(str); // TODO: control de errores
+	init_payload(str);
 	optind++;
 }
 
