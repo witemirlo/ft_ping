@@ -42,7 +42,10 @@ void icmp_checksum(struct icmp* const icmp, void const* const payload, size_t pa
 	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime & 0xffff));
 
 	for (size_t i = 0; i < payload_size; i++) {
-		icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i]);
+		if (i % 2 == 0)
+			icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i]);
+		else
+			icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i] << 8);
 	}
 
 	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;

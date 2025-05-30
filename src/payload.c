@@ -53,48 +53,34 @@ bool init_payload(char const* const str)
 		}
 	}
 
-	payload_pattern.size = (str_size % 2 == 0) ? j : j + 1; // TODO: los calculos bien
-	fprintf(stderr, "%s:%d: \"%s\" (%d) -> %d\n", __FILE__, __LINE__, str, str_size, j); // TODO: BORRAR
-	
+	payload_pattern.size = (str_size % 2 == 0) ? j : j + 1;
 	return true;
 }
 
 void set_payload(void* buffer, size_t size)
 {
-	// TODO: no hace lo que toca
 	size_t i;
 
 	for (i = 0; i < size; i++) {
-		// TODO: probablemente tiene que hacerse operaciones de bits
 		((uint8_t*)buffer)[i] = payload_pattern.pattern[i % payload_pattern.size];
 	}
 }
 
 // TODO: borrar
-int main(int argc, char** argv)
-{
-	char buffer[41];
+// int main(int argc, char** argv)
+// {
+// 	char buffer[41];
 
-	init_payload(argv[1]);
+// 	init_payload(argv[1]);
 
-	printf("size: %d\n", payload_pattern.size);
-	for (size_t i = 0; i < payload_pattern.size; i++)
-		printf("%x%x ", payload_pattern.pattern[i] >> 4, payload_pattern.pattern[i] & 0xf);
-	printf("\n");
+// 	// printf("size: %d\n", payload_pattern.size);
+// 	// for (size_t i = 0; i < payload_pattern.size; i++)
+// 	// 	printf("%x%x ", payload_pattern.pattern[i] >> 4, payload_pattern.pattern[i] & 0xf);
+// 	// printf("\n");
 
-	// for (uint8_t i = 0; i < payload_pattern.size; i++) {
-	// 	printf("%x ", payload_pattern.pattern[i]);
-	// }
-	// printf("\n");
+// 	set_payload(buffer, sizeof(buffer));
+// 	for (size_t i = 0; i < sizeof(buffer); i++)
+// 		printf("%x%x ", buffer[i] >> 4, buffer[i] & 0xf);
+// 	printf("\n");
 
-	// set_payload(buffer, sizeof(buffer));
-
-	// for (size_t i = 0; i < sizeof(buffer); i++) {
-	// 	if (i % 2 == 0)
-	// 		printf("%x", buffer[i]);
-	// 	else
-	// 		printf("%x ", buffer[i]);
-	// }
-	printf("\n");
-
-}
+// }
