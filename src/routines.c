@@ -87,7 +87,7 @@ void routine_send(t_connection_data* const data, int fd)
 	char        msg[sizeof(icmp) + 36];
 
 	init_icmp(&icmp);
-	memset(msg, 0, sizeof(msg));
+	memset(msg + sizeof(icmp), 0, sizeof(msg));
 
 	status = 0;
 	count = 0;
