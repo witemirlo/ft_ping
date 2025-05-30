@@ -38,36 +38,31 @@ static bool valid_hex_number(char const* const str)
 bool init_payload(char const* const str)
 {
 	// 112233445566778899aabbccddeeff42 como maximo
-	uint8_t i, j, str_size;
+	uint8_t i, str_size;
 
 	if (!valid_hex_number(str))
 		return NULL;
 
 	str_size = get_size(str);
-	for (i = 0, j = 0; i < str_size; i++) {
-		printf("i: %d, j: %d\n", i, j);
-		if (i % 2 != 0) {
-			payload_pattern.pattern[j] <<= 8;
-			payload_pattern.pattern[j] |= hexchar_to_int(str[i]);
-			j++;
-		}
-		else
-			payload_pattern.pattern[j] = hexchar_to_int(str[i]); 
+	for (i = 0; i < str_size; i++) {
+		payload_pattern.pattern[i] = hexchar_to_int(str[i]); 
 	}
 
-	payload_pattern.size = (str_size % 2 == 0) ? j : j + 1;
+	// payload_pattern.size = (str_size % 2 == 0) ? j : j + 1;
+	payload_pattern.size = str_size;
 	return true;
 }
 
-void set_payload(void* buffer, size_t size)
-{
-	size_t i;
+// void set_payload(void* buffer, size_t size)
+// {
+// 	size_t i;
 
-	i = 0;
-	while (i < size) {
-		i++;
-	}
-}
+// 	i = 0;
+// 	while (i < size) {
+// 		((uint8_t)buffer)[i] = (i % 2)
+// 		i++;
+// 	}
+// }
 
 int main(int argc, char** argv)
 {
@@ -80,7 +75,7 @@ int main(int argc, char** argv)
 	printf("size: %d\n", payload_pattern.size);
 
 	for (uint8_t i = 0; i < payload_pattern.size; i++) {
-		printf("%x%x ", payload_pattern.pattern[i] >> 8, payload_pattern.pattern[i] & 0xf);
+		printf("%x ", payload_pattern.pattern[i]);
 	}
 
 	printf("\n");
