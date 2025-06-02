@@ -40,6 +40,16 @@ static void print_data_received(t_connection_data const* const data, t_complete_
 	);
 }
 
+static void print_ttl_exceeded(t_connection_data const* const data, t_complete_packet const* const packet)
+{
+	printf("%d bytes from %s: %s\n"
+		, ntohs(packet->ip.ip_len) - (uint16_t)sizeof(struct ip)
+		, data->ip_char
+		, strerror(errno)
+	);
+
+}
+
 static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
 {
 	t_complete_packet packet;
@@ -55,6 +65,14 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			errno = 0;
+			continue;
+		}
+
+		// TODO: este da duplicados por algun motivo
+		// if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
+		if (errno == EHOSTUNREACH) {
+			// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
+			print_ttl_exceeded(data, &packet);
 			continue;
 		}
 
