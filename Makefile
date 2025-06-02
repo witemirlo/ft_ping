@@ -35,7 +35,7 @@ endif
 
 valgrind:
 	make re CFLAGS="$(VFLAGS)"
-	sudo valgrind --log-file="$(LOGFILE)" --track-fds=yes --leak-check=full --show-leak-kinds=all --trace-children=yes ./$(NAME) $(TFLAGS)
+	sudo valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --trace-children=yes ./$(NAME) $(TFLAGS)
 
 set_capabilities:
 	sudo setcap 'cap_net_raw=ep' $(shell pwd)/${NAME}
