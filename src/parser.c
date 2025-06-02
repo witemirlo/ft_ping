@@ -41,10 +41,10 @@ static void case_i(char const* const str)
 		exit(EXIT_FAILURE);
 	}
 
-	config.interval = parse_num(str, true, multiplier); // TODO: ahora que son microsegundos, admitir decimales
+	config.interval = parse_num(str, true, multiplier);
 	if (config.interval < 0)
 		exit(EXIT_FAILURE);
-	if (config.interval < multiplier) {
+	if (config.interval < (multiplier / 5)) {
 		fprintf(stderr, "%s: value too small: %.2f\n", __progname, (double)config.interval / (double)multiplier);
 		exit(EXIT_FAILURE);
 	}
