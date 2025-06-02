@@ -5,18 +5,6 @@ int main(int argc, char* argv[])
 	t_connection_data data = {0};
 
 	init(argc, argv, &data);
-	
-	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
-
-	if (tmp3 < 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		return EXIT_FAILURE;
-	} else if (tmp3 == 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		return EXIT_FAILURE;
-	}
 
 	int sv[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
