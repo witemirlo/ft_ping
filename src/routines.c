@@ -26,10 +26,10 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 
 static void print_data_received(t_connection_data const* const data, t_complete_packet const* const packet, t_time_info const* const time_info)
 {
-	if (flags & QUIET)
+	if (config.flags & QUIET)
 		return;
 
-	if (flags & FLOOD) {
+	if (config.flags & FLOOD) {
 		write(1, "\b \b", 3);
 		return;
 	}
@@ -68,11 +68,11 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 			error_destroy_connection_data(data);
 		}
 
-		if (packet.icmp.icmp_type != ICMP_ECHOREPLY || packet.icmp.icmp_id != id)
+		if (packet.icmp.icmp_type != ICMP_ECHOREPLY || packet.icmp.icmp_id != config.id)
 			continue;
 
 		count++;
-		if (max_count > 0 && count >= max_count)
+		if (config.max_count > 0 && count >= config.max_count)
 			is_running = false;
 
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
@@ -98,7 +98,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 		return false;
 	}
 
-	if (flags & FLOOD && !(flags & QUIET))
+	if (config.flags & FLOOD && !(config.flags & QUIET))
 		write(1, ".", 1);
 
 	return true;
@@ -115,10 +115,10 @@ static void routine_send(t_connection_data* const data, int fd)
 	memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
 	set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 
-	if (flags & LOAD) {
-		if (max_count > 0)
-			max_count += preload;
-		for (int64_t i = 0; i < preload; i++) {
+	if (config.flags & LOAD) {
+		if (config.max_count > 0)
+			config.max_count += config.preload;
+		for (int64_t i = 0; i < config.preload; i++) {
 			if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
 				is_running = false;
 				kill(getppid(), SIGINT);
@@ -134,9 +134,9 @@ static void routine_send(t_connection_data* const data, int fd)
 			break;
 		}
 		count++;
-		if (max_count > 0 && count >= max_count)
+		if (config.max_count > 0 && count >= config.max_count)
 			break;
-		usleep(interval);
+		usleep(config.interval);
 	}
 
 	destroy_connection_data(data);

@@ -1,10 +1,5 @@
 #include "ft_ping.h"
 
-int64_t max_count = -1;
-int64_t interval = 1000000;
-int64_t preload = 0;
-t_flags flags = NO_FLAGS;
-
 static int64_t parse_num(char const* const str, bool comma, int muliplier)
 {
 	for (size_t i = 0; str[i]; i++) {
@@ -24,13 +19,13 @@ static int64_t parse_num(char const* const str, bool comma, int muliplier)
 static void case_v(char const* const str)
 {
 	(void)str;
-	flags |= VERBOSE_OUTPUT;
+	config.flags |= VERBOSE_OUTPUT;
 }
 
 static void case_c(char const* const str)
 {
-	max_count = parse_num(str, false, 1);
-	if (max_count < 0)
+	config.max_count = parse_num(str, false, 1);
+	if (config.max_count < 0)
 		exit(EXIT_FAILURE);
 	optind++;
 }
@@ -39,16 +34,16 @@ static void case_i(char const* const str)
 {
 	const int multiplier = 1000000;
 
-	if (flags & FLOOD) {
+	if (config.flags & FLOOD) {
 		fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
 		exit(EXIT_FAILURE);
 	}
 
-	interval = parse_num(str, true, multiplier); // TODO: ahora que son microsegundos, admitir decimales
-	if (interval < 0)
+	config.interval = parse_num(str, true, multiplier); // TODO: ahora que son microsegundos, admitir decimales
+	if (config.interval < 0)
 		exit(EXIT_FAILURE);
-	if (interval < multiplier) {
-		fprintf(stderr, "%s: value too small: %.2f\n", __progname, (double)interval / (double)multiplier);
+	if (config.interval < multiplier) {
+		fprintf(stderr, "%s: value too small: %.2f\n", __progname, (double)config.interval / (double)multiplier);
 		exit(EXIT_FAILURE);
 	}
 	optind++;
@@ -57,10 +52,10 @@ static void case_i(char const* const str)
 static void case_f(char const* const str)
 {
 	(void)str;
-	flags |= FLOOD;
-	interval = (60. / 100.) * 1000; // TODO: revisar los numeros
+	config.flags |= FLOOD;
+	config.interval = (60. / 100.) * 1000; // TODO: revisar los numeros
 
-	if (flags & INTERVAL) {
+	if (config.flags & INTERVAL) {
 		fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
 		exit(EXIT_FAILURE);
 	}
@@ -74,7 +69,7 @@ static void case_f(char const* const str)
 static void case_q(char const* const str)
 {
 	(void)str;
-	flags |= QUIET;
+	config.flags |= QUIET;
 }
 
 static void case_p(char const* const str)
@@ -87,10 +82,10 @@ static void case_p(char const* const str)
 static void case_l(char const* const str)
 {
 	(void)str;
-	flags |= LOAD;
-	preload = parse_num(str, false, 1);
+	config.flags |= LOAD;
+	config.preload = parse_num(str, false, 1);
 
-	if (preload < 0)
+	if (config.preload < 0)
 		exit(EXIT_FAILURE);
 
 	if (getuid() != 0) {
@@ -156,7 +151,7 @@ void parser(int argc, char* argv[])
 	int opt;
 
 	init_payload("0");
-	flags = NO_FLAGS;
+	config.flags = NO_FLAGS;
 	while ((opt = getopt(argc, argv, "?vcfiqfpl")) > 0)
 		(cases[get_case(opt)])(argv[optind]);
 

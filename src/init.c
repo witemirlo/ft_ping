@@ -3,7 +3,7 @@
 void init(int argc, char** argv, t_connection_data* data)
 {
 	srand(time(NULL));
-        id = rand();
+        config.id = rand();
 
         parser(argc, argv);
         get_connection_data(data, argv[optind]);

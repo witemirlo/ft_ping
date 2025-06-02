@@ -50,7 +50,6 @@ typedef struct s_connection_data {
 	char*              ip_char;
 } t_connection_data;
 
-// TODO: ELEGIR MEJORES NOMBRES PARA AMBAS ESTRUCTURAS
 typedef struct s_time_info {
 	double min_time;
 	double avg_time;
@@ -71,16 +70,18 @@ typedef struct s_payload_pattern {
 	uint8_t pattern[16];
 } t_payload_pattern;
 
-// GLOBALS ---------------------------------------------------------------------
-extern const char *__progname;
+typedef struct s_config {
+	uint16_t id;
+	int64_t max_count;
+	int64_t interval;
+	int64_t preload;
+	t_flags flags;
+} t_config;
 
-extern bool is_running;
-// TODO: struct para la configuracion?
-extern uint16_t id;
-extern int64_t max_count;
-extern int64_t interval;
-extern int64_t preload;
-extern t_flags flags;
+// GLOBALS ---------------------------------------------------------------------
+extern const char* __progname;
+extern bool        is_running;
+extern t_config    config;
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------
 // -- INIT ---------------------------------------------------------------------

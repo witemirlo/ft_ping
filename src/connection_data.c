@@ -17,7 +17,6 @@ static void get_addrinfo(char const* const addr, struct addrinfo const* const hi
 	const int ret = getaddrinfo(addr, 0, hints, result);
 
 	if (ret < 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: %s: %s\n", __progname, addr, gai_strerror(ret));
 		exit(EXIT_FAILURE);
 	}
@@ -35,7 +34,6 @@ static int get_fd_from_addrinfo(struct addrinfo* addr, struct addrinfo** rp)
 	}
 
 	if (addr == NULL) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -49,7 +47,6 @@ static void set_socket_options(int sockfd)
 	const int opt = 1;
 
 	if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) < 0) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -62,7 +59,6 @@ char* get_ip_in_chars(struct in_addr addr)
 
 	ip_char = strdup(tmp);
 	if (ip_char == NULL) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -90,7 +86,6 @@ void get_connection_data(t_connection_data* data, char const* const str_addr)
 
 	freeaddrinfo(result);
 	if (data->canonname == NULL) {
-		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
