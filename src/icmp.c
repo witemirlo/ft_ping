@@ -63,5 +63,5 @@ void init_icmp(struct icmp* const icmp)
 
         icmp->icmp_type = ICMP_ECHO;
 	icmp->icmp_code = 0;
-	icmp->icmp_id = id;
+	icmp->icmp_id = config.id;
 }
