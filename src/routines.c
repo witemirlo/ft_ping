@@ -31,6 +31,10 @@ t_time_stats routine_receive(int fd) // TODO: refactor
 	ssize_t           bytes_readed, count;
 	t_time_info       time_info;
 
+
+	signal(SIGINT, signal_int_receive_routine);
+	signal(SIGQUIT, signal_quit);
+
 	count = 0;
 	while (is_running) {
 		bytes_readed = recvfrom(data.sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data.addr, &data.addr_len);
@@ -102,6 +106,9 @@ void routine_send(int fd)
 	int         status;
 	char        msg[sizeof(icmp) + 36]; // TODO: hacer typedef msg
 
+
+	signal(SIGINT, signal_int_send_routine);
+	signal(SIGQUIT, signal_quit);
 	// init_icmp(&icmp);
 	init_icmp((struct icmp*)msg);
 	memset(msg + sizeof(icmp), 0, sizeof(msg) - sizeof(icmp));

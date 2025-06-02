@@ -95,6 +95,9 @@ void print_header(void);
 void signal_int(int sig);
 void signal_quit(int sig);
 
+void signal_int_send_routine(int sig);
+void signal_int_receive_routine(int sig);
+
 // -- ICMP PAQUETS -------------------------------------------------------------
 void init_icmp(struct icmp* const icmp);
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size);

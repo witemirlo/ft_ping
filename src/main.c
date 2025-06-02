@@ -25,10 +25,6 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	// TODO: mover esto de aqui y definir mejor que tendrian que hacer
-	signal(SIGINT, signal_int);
-	signal(SIGQUIT, signal_quit);
-
 	int sv[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
