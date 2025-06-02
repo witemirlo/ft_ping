@@ -17,7 +17,6 @@ CPPFLAGS := -I include/
 
 VFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2
 TFLAGS   := google.com
-LOGFILE  := valgrind.log
 
 # ------------------------------------------------------------------------------
 
@@ -42,10 +41,9 @@ set_capabilities:
 
 clean:
 	rm -f $(OBJS)
-	rm -f $(LOGFILE)
 
 fclean: clean
 	rm -f $(NAME)
 
 .SECONDARY: $(OBJS)
-.PHONY: all clean fclean re set_capabilities
+.PHONY: all clean fclean re set_capabilities valgrind

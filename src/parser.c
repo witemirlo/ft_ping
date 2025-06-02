@@ -2,6 +2,7 @@
 
 int64_t max_count = -1;
 int64_t interval = 1000000;
+int64_t preload = 0;
 t_flags flags = NO_FLAGS;
 
 static int64_t parse_num(char const* const str, bool comma, int muliplier)
@@ -83,6 +84,23 @@ static void case_p(char const* const str)
 	optind++;
 }
 
+static void case_l(char const* const str)
+{
+	(void)str;
+	flags |= LOAD;
+	preload = parse_num(str, false, 1);
+
+	if (preload < 0)
+		exit(EXIT_FAILURE);
+
+	if (getuid() != 0) {
+		fprintf(stderr, "%s: TODO\n", __progname); // TODO: poner el mensaje que toca
+		exit(EXIT_FAILURE);
+	}
+
+	optind++;
+}
+
 static void case_default(char const* const str)
 {
 	(void)str;
@@ -95,6 +113,8 @@ static void case_default(char const* const str)
 		"  -i NUMBER                  wait NUMBER seconds between sending each packet\n"
 		" \nOptions valid for --echo requests:\n\n"
 		"  -f                         flood ping (root only)\n"
+		"  -l NUMBER                  send NUMBER packets as fast as possible before\n"
+                "                             falling into normal mode of behavior (root only)\n"
 		"  -p PATTERN                 fill ICMP packet with given pattern (hex)"
 		"  -q                         quiet output\n"
 		"  -v                         verbose output\n"
@@ -116,6 +136,7 @@ static uint8_t get_case(char c)
 		case 'f': return 4;
 		case 'q': return 5;
 		case 'p': return 6;
+		case 'l': return 7;
 		default:  return 0;
 	}
 }
@@ -129,13 +150,14 @@ void parser(int argc, char* argv[])
 		case_i,
 		case_f,
 		case_q,
-		case_p
+		case_p,
+		case_l
 	};
 	int opt;
 
 	init_payload("0");
 	flags = NO_FLAGS;
-	while ((opt = getopt(argc, argv, "?vcfiqfp")) > 0)
+	while ((opt = getopt(argc, argv, "?vcfiqfpl")) > 0)
 		(cases[get_case(opt)])(argv[optind]);
 
 	if (optind >= argc) {

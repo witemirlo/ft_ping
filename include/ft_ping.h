@@ -29,8 +29,10 @@ typedef enum e_flags {
 	VERBOSE_OUTPUT = 0x1,
 	COUNT = 0x2,
 	FLOOD = 0x4,
-	INTERVAL = 0x8,
-	QUIET = 0x16
+	INTERVAL = 0x10,
+	QUIET = 0x20,
+	LOAD = 0x40,
+
 } t_flags;
 
 typedef struct s_complete_packet {
@@ -76,6 +78,7 @@ extern bool is_running;
 extern uint16_t id;
 extern int64_t max_count;
 extern int64_t interval;
+extern int64_t preload;
 extern t_flags flags;
 
 extern t_connection_data data;
