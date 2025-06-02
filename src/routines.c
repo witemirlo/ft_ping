@@ -71,7 +71,6 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
 			continue;
 
-		fprintf(stderr, "%s:%d DEBUG from %s: %d, %d\n", __FILE__, __LINE__, __func__, packet.icmp.icmp_id, config.id);
 		if(packet.icmp.icmp_id != config.id)
 			continue;
 

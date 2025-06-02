@@ -55,7 +55,7 @@ static void case_f(char const* const str)
 {
 	(void)str;
 	config.flags |= FLOOD;
-	config.interval = (60. / 100.) * 1000000; // TODO: revisar los numeros
+	config.interval = 10000;
 
 	if (config.flags & INTERVAL) {
 		fprintf(stderr, "%s: -f and -i incompatible options\n", __progname);
