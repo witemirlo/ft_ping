@@ -1,7 +1,5 @@
 #include "ft_ping.h"
 
-uint16_t id = 0;
-
 static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)
 {
 	u_int32_t c = (u_int32_t)a + (u_int32_t)b;
@@ -21,9 +19,11 @@ static void icmp_timestamp(struct icmp* const icmp)
 		// TODO: errores, quizas retornar algo para que main limpie
 		return;
 	}
+
 	icmp->icmp_otime = htonl(tv.tv_sec);
 	icmp->icmp_rtime = htonl(tv.tv_usec);
 	icmp->icmp_seq = htons(seq);
+
         seq++;
 }
 
