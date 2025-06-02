@@ -79,37 +79,64 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 	};
 }
 
-void routine_send(t_connection_data* const data, int fd)
+static bool send_msg(t_connection_data* const data, void* const buffer, size_t size)
+{
+	update_icmp(buffer, (uint8_t*)buffer + sizeof(struct icmp), size);
+
+	// TODO: hacerlo no bloqueante
+	if (sendto(data->sockfd, buffer, sizeof(struct icmp) + size, 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		return false;
+	}
+
+	if (flags & FLOOD && !(flags & QUIET))
+		write(1, ".", 1);
+
+	return true;
+}
+ 
+void routine_send(t_connection_data* const data, int fd) // TODO: el segundo argumento para que?
 {
 	struct icmp icmp;
 	ssize_t     count;
 	int         status;
 	char        msg[sizeof(icmp) + 36]; // TODO: hacer typedef msg
 
-	init_icmp(&icmp);
+	// init_icmp(&icmp);
+	init_icmp((struct icmp*)msg);
 	memset(msg + sizeof(icmp), 0, sizeof(msg) - sizeof(icmp));
 
 	status = 0;
 	count = 0;
 
 	set_payload(msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
-	while (is_running) {
-		update_icmp(&icmp, msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
+	// while (is_running) {
+	// 	// update_icmp(&icmp, msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
+	// 	update_icmp(&msg, msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
 
-		memcpy(msg, &icmp, sizeof(icmp));
-		// TODO: hacerlo no bloqueante
-		if (sendto(data->sockfd, msg, sizeof(msg), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
-			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-			status = errno;
+	// 	// memcpy(msg, &icmp, sizeof(icmp));
+	// 	// TODO: hacerlo no bloqueante
+	// 	if (sendto(data->sockfd, msg, sizeof(msg), 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+	// 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+	// 		status = errno;
+	// 		break;
+	// 	}
+	// 	count++; // TODO: cuenta los paquetes que llegan, no que envia
+	// 	if (flags & QUIET) {
+	// 	} else if (flags & FLOOD)
+	// 		write(1, ".", 1);
+	// 	if (max_count > 0 && count >= max_count)
+	// 		is_running = false;
+	// 	usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
+	// }
+
+	while (is_running) {
+		if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp)))
 			break;
-		}
-		count++;
-		if (flags & QUIET) {
-		} else if (flags & FLOOD)
-			write(1, ".", 1);
+		count++; // TODO: cuenta los paquetes que llegan, no que envia
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
-		usleep(interval);
+		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
 	}
 
 	destroy_connection_data(data);
