@@ -63,22 +63,3 @@ void set_payload(void* buffer, size_t size)
 		((uint8_t*)buffer)[i] = payload_pattern.pattern[i % payload_pattern.size];
 	}
 }
-
-// TODO: borrar
-// int main(int argc, char** argv)
-// {
-// 	char buffer[41];
-
-// 	init_payload(argv[1]);
-
-// 	// printf("size: %d\n", payload_pattern.size);
-// 	// for (size_t i = 0; i < payload_pattern.size; i++)
-// 	// 	printf("%x%x ", payload_pattern.pattern[i] >> 4, payload_pattern.pattern[i] & 0xf);
-// 	// printf("\n");
-
-// 	set_payload(buffer, sizeof(buffer));
-// 	for (size_t i = 0; i < sizeof(buffer); i++)
-// 		printf("%x%x ", buffer[i] >> 4, buffer[i] & 0xf);
-// 	printf("\n");
-
-// }
