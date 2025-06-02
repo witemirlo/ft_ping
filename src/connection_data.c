@@ -70,38 +70,34 @@ char* get_ip_in_chars(struct in_addr addr)
 	return ip_char;
 }
 
-t_connection_data get_connection_data(char const* const str_addr)
+void get_connection_data(t_connection_data* data, char const* const str_addr)
 {
-	t_connection_data data = {0};
-
 	const struct addrinfo hints = get_hints();
 	struct addrinfo       *result = NULL;
 	struct addrinfo       *rp = NULL;
 
 	get_addrinfo(str_addr, &hints, &result);
-	data.sockfd = get_fd_from_addrinfo(result, &rp);
+	data->sockfd = get_fd_from_addrinfo(result, &rp);
 
-	if (data.sockfd < 0 || rp == NULL) {
+	if (data->sockfd < 0 || rp == NULL) {
 		freeaddrinfo(result);
 		exit(EXIT_FAILURE);
 	}
 
-	data.addr = *((struct sockaddr_in*)(rp->ai_addr));
-	data.addr_len = sizeof(data.addr);
-	data.canonname = strdup(rp->ai_canonname);
+	data->addr = *((struct sockaddr_in*)(rp->ai_addr));
+	data->addr_len = sizeof(data->addr);
+	data->canonname = strdup(rp->ai_canonname);
 
 	freeaddrinfo(result);
-	if (data.canonname == NULL) {
+	if (data->canonname == NULL) {
 		fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	data.ip_char = get_ip_in_chars(data.addr.sin_addr);
+	data->ip_char = get_ip_in_chars(data->addr.sin_addr);
 
-	set_socket_options(data.sockfd);
-
-	return data;
+	set_socket_options(data->sockfd);
 }
 
 void destroy_connection_data(t_connection_data* const data)

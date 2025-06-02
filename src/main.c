@@ -1,22 +1,11 @@
 #include "ft_ping.h"
 
-
 int main(int argc, char* argv[])
 {
-	t_connection_data data;
-	// TODO: mover a otro sitio
-	srand(time(NULL));
-        id = rand();
+	t_connection_data data = {0};
 
-	parser(argc, argv);
-	data = get_connection_data(argv[optind]);
-	print_header(&data);
+	init(argc, argv, &data);
 	
-
-	// TODO: refactor
-	signal(SIGINT, signal_int);
-	signal(SIGQUIT, signal_quit);
-
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
 
 	if (tmp3 < 0) {

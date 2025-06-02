@@ -3,6 +3,7 @@ NAME     := ft_ping
 SRCS     := src/main.c\
 	    src/connection_data.c\
 	    src/icmp.c\
+	    src/init.c\
 	    src/parser.c\
 	    src/payload.c\
 	    src/print_header.c\

@@ -82,12 +82,14 @@ extern int64_t preload;
 extern t_flags flags;
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------
-// -- CONNECTION DATA ----------------------------------------------------------
-t_connection_data get_connection_data(char const* const addr);
-void destroy_connection_data(t_connection_data* const data);
-
-// -- PARSING ------------------------------------------------------------------
+// -- INIT ---------------------------------------------------------------------
+void init(int argc, char** argv, t_connection_data* data);
 void parser(int argc, char* argv[]);
+
+
+// -- CONNECTION DATA ----------------------------------------------------------
+void get_connection_data(t_connection_data* data, char const* const str_addr);
+void destroy_connection_data(t_connection_data* const data);
 
 // -- FLAGS --------------------------------------------------------------------
 void print_header(t_connection_data const* const data);
