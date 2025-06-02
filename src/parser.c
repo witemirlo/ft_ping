@@ -63,7 +63,7 @@ static void case_f(char const* const str)
 	}
 
 	if (getuid() != 0) {
-		fprintf(stderr, "%s: TODO\n", __progname); // TODO: poner el mensaje que toca
+		fprintf(stderr, "%s: Error: Operation not permitted\n", __progname);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -91,7 +91,7 @@ static void case_l(char const* const str)
 		exit(EXIT_FAILURE);
 
 	if (getuid() != 0) {
-		fprintf(stderr, "%s: TODO\n", __progname); // TODO: poner el mensaje que toca
+		fprintf(stderr, "%s: Error: Operation not permitted\n", __progname);
 		exit(EXIT_FAILURE);
 	}
 
