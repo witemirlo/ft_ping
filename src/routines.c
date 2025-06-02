@@ -1,21 +1,18 @@
 #include "ft_ping.h"
 
-static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, uint32_t otime, uint32_t rtime)
+static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 {
 	static t_time_info time_info = {.min_time = DBL_MAX, .avg_time = 0, .max_time = 0};
-	static double      total_time = 0;
+	static long double total_time = 0;
+	long double        t1, t2;
 	struct timeval     tv;
-	uint64_t           t1, t2;
 
 	gettimeofday(&tv, NULL);
 
-	snprintf(buffer, buffer_len, "%lu%lu", tv.tv_sec, tv.tv_usec);
-	t1 = strtoull(buffer, NULL, 10);
+	t1 = ((uint32_t)tv.tv_sec * 1000) + ((uint32_t)tv.tv_usec / 1000.);
+	t2 = (htonl(otime) * 1000) + (htonl(rtime) / 1000.);
 
-	snprintf(buffer, buffer_len, "%u%u", ntohl(otime), ntohl(rtime));
-	t2 = strtoull(buffer, NULL, 10);
-
-	time_info.time =  (t1 - t2) / 1000.; // TODO: ESTO DA UNAS BURRADAS DE TIEMPO A VECES
+	time_info.time =  t1 - t2;
 	total_time += time_info.time;
 
 	time_info.min_time = (time_info.time < time_info.min_time) ? time_info.time : time_info.min_time;
@@ -46,7 +43,6 @@ static void print_data_received(t_connection_data const* const data, t_complete_
 static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
 {
 	t_complete_packet packet;
-	char              buffer[BUFSIZ];
 	ssize_t           bytes_readed, count;
 	t_time_info       time_info;
 
@@ -78,7 +74,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		if (config.max_count > 0 && count >= config.max_count)
 			is_running = false;
 
-		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
+		time_info = get_time_info(count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		print_data_received(data, &packet, &time_info);
 	}
 
