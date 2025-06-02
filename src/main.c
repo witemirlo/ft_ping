@@ -3,7 +3,7 @@
 int main(int argc, char* argv[])
 {
 	t_connection_data data = {0};
-	t_time_stats time_stats;
+	t_time_stats      time_stats;
 
 	init(argc, argv, &data);
 	time_stats = routines(&data);

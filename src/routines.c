@@ -24,7 +24,7 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
-static t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
+static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
@@ -42,12 +42,9 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd) // TO
 			continue;
 		}
 		if (bytes_readed <= 0) {
-			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
-			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-			destroy_connection_data(data);
 			close(fd);
-			// TODO: enviar senal al hijo para que no deje huerfanos, el sigint para que recicle
-			exit(EXIT_FAILURE);
+			kill(pid, SIGINT);
+			error_destroy_connection_data(data);
 		}
 		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
 			continue;
@@ -70,6 +67,8 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd) // TO
 				, time_info.time
 			);
 	}
+
+	kill(pid, SIGINT);
 
 	return (t_time_stats){
 		.min_time = time_info.min_time,
@@ -110,7 +109,7 @@ static void routine_send(t_connection_data* const data, int fd)
 		for (int64_t i = 0; i < preload; i++) {
 			if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
 				is_running = false;
-				// TODO: senal en el receiver
+				kill(getppid(), SIGINT);
 				break;
 			}
 			count++;
@@ -119,19 +118,19 @@ static void routine_send(t_connection_data* const data, int fd)
 
 	while (is_running) {
 		if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
-			// TODO: senal en el receiver
+			kill(getppid(), SIGINT);
 			break;
 		}
 		count++;
 		if (max_count > 0 && count >= max_count)
 			break;
-		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
+		usleep(interval);
 	}
 
 	destroy_connection_data(data);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
-	exit(0); // TODO: al final se usa el status?
+	exit(0);
 }
 
 t_time_stats routines(t_connection_data* data)
@@ -153,7 +152,7 @@ t_time_stats routines(t_connection_data* data)
 	}
 
 	close(sv[0]);
-	time_stats = routine_receive(data, sv[1]);
+	time_stats = routine_receive(data, sv[1], pid);
 	
 	if (recv(sv[1], &time_stats.packets_sent, sizeof(time_stats.packets_sent), 0) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
