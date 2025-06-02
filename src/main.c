@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
 	int sv[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		destroy_connection_data(&data);
+		destroy_connection_data(&data, true);
 		return EXIT_FAILURE; // TODO: realmente esto podria ser que simplemente llegue al final y punto
 	}
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
 	if (pid < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		destroy_connection_data(&data);
+		destroy_connection_data(&data, true);
 		return EXIT_FAILURE; // TODO: realmente esto podria ser que simplemente llegue al final y punto
 	} else if (pid == 0) {
 		close(sv[1]);
@@ -76,6 +76,6 @@ int main(int argc, char* argv[])
 		, time_stats.max_time
 	); // TODO: terminar bien
 
-	destroy_connection_data(&data);
+	destroy_connection_data(&data, true);
 	return EXIT_SUCCESS;
 }

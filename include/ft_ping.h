@@ -79,7 +79,7 @@ extern t_flags flags;
 // FUNCTION PROTOTIPES ---------------------------------------------------------
 // -- CONNECTION DATA ----------------------------------------------------------
 t_connection_data get_connection_data(char const* const addr);
-void destroy_connection_data(t_connection_data* data);
+void destroy_connection_data(t_connection_data* data, bool destroy_sockfd);
 
 // -- PARSING ------------------------------------------------------------------
 void parser(int argc, char* argv[]);

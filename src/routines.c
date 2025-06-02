@@ -43,7 +43,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 		if (bytes_readed <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-			destroy_connection_data(data);
+			destroy_connection_data(data, true);
 			close(fd);
 			// TODO: enviar senal al hijo para que no deje huerfanos
 			exit(EXIT_FAILURE);
@@ -95,7 +95,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 	return true;
 }
  
-void routine_send(t_connection_data* const data, int fd) // TODO: el segundo argumento para que?
+void routine_send(t_connection_data* const data, int fd)
 {
 	struct icmp icmp;
 	ssize_t     count;
@@ -139,7 +139,7 @@ void routine_send(t_connection_data* const data, int fd) // TODO: el segundo arg
 		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
 	}
 
-	destroy_connection_data(data);
+	destroy_connection_data(data, true);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
 	exit(status); // TODO: al final se usa el status?
