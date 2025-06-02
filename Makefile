@@ -13,28 +13,36 @@ OBJS     := $(SRCS:.c=.o)
 
 CC       := cc
 CFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2 -fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,bounds-strict,float-divide-by-zero,float-cast-overflow
-
 CPPFLAGS := -I include/
+
+VFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2
+TFLAGS   := google.com
+LOGFILE  := valgrind.log
+
+# ------------------------------------------------------------------------------
 
 all: $(NAME)
 re: fclean all
 
 $(NAME): $(OBJS) include/ft_ping.h
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+ifneq ($(CFLAGS), $(VFLAGS))
 	make set_capabilities
+endif
 
 %.o: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-sanitize:
-	export ASAN_OPTIONS=strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
-	make re CC=gcc CFLAGS="$(CFLAGS) $(SANITIZE)"
+valgrind:
+	make re CFLAGS="$(VFLAGS)"
+	sudo valgrind --log-file="$(LOGFILE)" --track-fds=yes --leak-check=full --show-leak-kinds=all --trace-children=yes ./$(NAME) $(TFLAGS)
 
 set_capabilities:
 	sudo setcap 'cap_net_raw=ep' $(shell pwd)/${NAME}
 
 clean:
 	rm -f $(OBJS)
+	rm -f $(LOGFILE)
 
 fclean: clean
 	rm -f $(NAME)

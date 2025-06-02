@@ -7,6 +7,7 @@ void signal_int(int sig)
 {
 	(void)sig;
 	is_running = false;
+	destroy_connection_data(true);
 
 	if (multipress) 
 		exit(EXIT_FAILURE);
