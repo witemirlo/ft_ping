@@ -6,6 +6,7 @@ void signal_int(int sig)
 {
 	(void)sig;
 	is_running = false;
+	fflush(stdout);
 }
 
 void signal_quit(int sig)

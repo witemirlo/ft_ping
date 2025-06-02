@@ -27,7 +27,7 @@ static void print_data_received(t_connection_data const* const data, t_complete_
 		return;
 
 	if (config.flags & FLOOD) {
-		write(1, "\b \b", 3);
+		printf("\b \b");
 		return;
 	}
 
@@ -98,7 +98,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 	}
 
 	if (config.flags & FLOOD && !(config.flags & QUIET))
-		write(1, ".", 1);
+		printf(".");
 
 	return true;
 }
