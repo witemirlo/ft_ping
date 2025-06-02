@@ -24,7 +24,7 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
-t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
+t_time_stats routine_receive(int fd) // TODO: refactor
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
@@ -33,7 +33,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 
 	count = 0;
 	while (is_running) {
-		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
+		bytes_readed = recvfrom(data.sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data.addr, &data.addr_len);
 		if (!is_running)
 			break;
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -43,7 +43,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 		if (bytes_readed <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-			destroy_connection_data(data, true);
+			destroy_connection_data(true);
 			close(fd);
 			// TODO: enviar senal al hijo para que no deje huerfanos
 			exit(EXIT_FAILURE);
@@ -64,7 +64,7 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
 				, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
 				// , buffer
-				, data->ip_char
+				, data.ip_char
 				, ntohs(packet.icmp.icmp_seq)
 				, packet.ip.ip_ttl
 				, time_info.time
@@ -79,12 +79,12 @@ t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: ref
 	};
 }
 
-static bool send_msg(t_connection_data* const data, void* const buffer, size_t size)
+static bool send_msg(void* const buffer, size_t size)
 {
 	update_icmp(buffer, (uint8_t*)buffer + sizeof(struct icmp), size);
 
 	// TODO: hacerlo no bloqueante
-	if (sendto(data->sockfd, buffer, sizeof(struct icmp) + size, 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
+	if (sendto(data.sockfd, buffer, sizeof(struct icmp) + size, 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return false;
 	}
@@ -95,7 +95,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 	return true;
 }
  
-void routine_send(t_connection_data* const data, int fd)
+void routine_send(int fd)
 {
 	struct icmp icmp;
 	ssize_t     count;
@@ -131,7 +131,7 @@ void routine_send(t_connection_data* const data, int fd)
 	// }
 
 	while (is_running) {
-		if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp)))
+		if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp)))
 			break;
 		count++; // TODO: cuenta los paquetes que llegan, no que envia
 		if (max_count > 0 && count >= max_count)
@@ -139,7 +139,7 @@ void routine_send(t_connection_data* const data, int fd)
 		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
 	}
 
-	destroy_connection_data(data, true);
+	destroy_connection_data(true);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
 	exit(status); // TODO: al final se usa el status?

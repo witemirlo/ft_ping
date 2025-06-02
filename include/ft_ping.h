@@ -70,22 +70,26 @@ typedef struct s_payload_pattern {
 
 // GLOBALS ---------------------------------------------------------------------
 extern const char *__progname;
+
 extern bool is_running;
+// TODO: struct para la configuracion?
 extern uint16_t id;
 extern int64_t max_count;
 extern int64_t interval;
 extern t_flags flags;
 
+extern t_connection_data data;
+
 // FUNCTION PROTOTIPES ---------------------------------------------------------
 // -- CONNECTION DATA ----------------------------------------------------------
 t_connection_data get_connection_data(char const* const addr);
-void destroy_connection_data(t_connection_data* data, bool destroy_sockfd);
+void destroy_connection_data(bool destroy_sockfd);
 
 // -- PARSING ------------------------------------------------------------------
 void parser(int argc, char* argv[]);
 
 // -- FLAGS --------------------------------------------------------------------
-void print_header(t_connection_data* data);
+void print_header(void);
 
 // -- SIGNALS ------------------------------------------------------------------
 void signal_int(int sig);
@@ -96,8 +100,8 @@ void init_icmp(struct icmp* const icmp);
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size);
 
 // -- ROUTINES -----------------------------------------------------------------
-void routine_send(t_connection_data* const data, int fd);
-t_time_stats routine_receive(t_connection_data* const data, int fd);
+void routine_send(int fd);
+t_time_stats routine_receive(int fd);
 
 // -- PAYLOAD ------------------------------------------------------------------
 void init_payload(char const* const str);
