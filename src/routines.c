@@ -24,6 +24,25 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
+static void print_data_received(t_connection_data const* const data, t_complete_packet const* const packet, t_time_info const* const time_info)
+{
+	if (flags & QUIET)
+		return;
+
+	if (flags & FLOOD) {
+		write(1, "\b \b", 3);
+		return;
+	}
+
+	printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
+		, ntohs(packet->ip.ip_len) - (uint16_t)sizeof(struct ip)
+		, data->ip_char
+		, ntohs(packet->icmp.icmp_seq)
+		, packet->ip.ip_ttl
+		, time_info->time
+	);
+}
+
 static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
 {
 	t_complete_packet packet;
@@ -31,41 +50,33 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 	ssize_t           bytes_readed, count;
 	t_time_info       time_info;
 
-
 	count = 0;
 	while (is_running) {
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
+
 		if (!is_running)
 			break;
+
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			errno = 0;
 			continue;
 		}
+
 		if (bytes_readed <= 0) {
 			close(fd);
 			kill(pid, SIGINT);
 			error_destroy_connection_data(data);
 		}
-		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
+
+		if (packet.icmp.icmp_type != ICMP_ECHOREPLY || packet.icmp.icmp_id != id)
 			continue;
-		if (packet.icmp.icmp_id != id)
-			continue;
+
 		count++;
 		if (max_count > 0 && count >= max_count)
 			is_running = false;
+
 		time_info = get_time_info(buffer, sizeof(buffer), count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
-		if (flags & QUIET)
-			continue;
-		else if (flags & FLOOD)
-			write(1, "\b \b", 3);
-		else
-			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
-				, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
-				, data->ip_char
-				, ntohs(packet.icmp.icmp_seq)
-				, packet.ip.ip_ttl
-				, time_info.time
-			);
+		print_data_received(data, &packet, &time_info);
 	}
 
 	kill(pid, SIGINT);
@@ -105,7 +116,8 @@ static void routine_send(t_connection_data* const data, int fd)
 	set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 
 	if (flags & LOAD) {
-		max_count += preload;
+		if (max_count > 0)
+			max_count += preload;
 		for (int64_t i = 0; i < preload; i++) {
 			if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
 				is_running = false;
