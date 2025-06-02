@@ -101,37 +101,43 @@ static bool send_msg(void* const buffer, size_t size)
  
 void routine_send(int fd)
 {
-	struct icmp icmp;
-	ssize_t     count;
-	int         status;
-	char        msg[sizeof(icmp) + 36]; // TODO: hacer typedef msg
+	ssize_t count;
+	char    msg[sizeof(struct icmp) + 36]; // TODO: hacer typedef msg
 
-	status = 0;
 	count = 0;
 
 	signal(SIGINT, signal_int_send_routine);
 	signal(SIGQUIT, signal_quit);
 
 	init_icmp((struct icmp*)msg);
-	memset(msg + sizeof(icmp), 0, sizeof(msg) - sizeof(icmp));
-	set_payload(msg + sizeof(icmp), sizeof(msg) - sizeof(icmp));
+	memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
+	set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 
 	if (flags & LOAD) {
-		for (int64_t i = 0; i < preload; i++)
-			send_msg(msg, sizeof(msg) - sizeof(struct icmp)); // TODO: el valor de retorno
+		max_count += preload;
+		for (int64_t i = 0; i < preload; i++) {
+			if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp))) {
+				is_running = false;
+				// TODO: senal en el receiver
+				break;
+			}
+			count++;
+		}
 	}
 
 	while (is_running) {
-		if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp)))
+		if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp))) {
+			// TODO: senal en el receiver
 			break;
-		count++; // TODO: cuenta los paquetes que llegan, no que envia
+		}
+		count++;
 		if (max_count > 0 && count >= max_count)
-			is_running = false;
+			break;
 		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
 	}
 
 	destroy_connection_data(true);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
-	exit(status); // TODO: al final se usa el status?
+	exit(0); // TODO: al final se usa el status?
 }
