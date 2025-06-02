@@ -19,6 +19,8 @@ CPPFLAGS := -I include/
 VFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2
 TFLAGS   := google.com
 
+TTL      := 64
+
 # ------------------------------------------------------------------------------
 
 all: $(NAME)
@@ -39,6 +41,9 @@ valgrind:
 
 set_capabilities:
 	sudo setcap 'cap_net_raw=ep' $(shell pwd)/${NAME}
+
+set_ttl:
+	sudo sysctl -w net.ipv4.ip_default_ttl=$(TTL)
 
 clean:
 	rm -f $(OBJS)

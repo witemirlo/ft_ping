@@ -49,7 +49,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 	count = 0;
 	while (is_running) {
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
-
+		// TODO: si es Time to live exceeded deberia seguir
 		if (!is_running)
 			break;
 
