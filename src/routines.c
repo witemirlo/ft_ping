@@ -24,7 +24,7 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
-t_time_stats routine_receive(int fd) // TODO: refactor
+t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
@@ -32,12 +32,9 @@ t_time_stats routine_receive(int fd) // TODO: refactor
 	t_time_info       time_info;
 
 
-	signal(SIGINT, signal_int_receive_routine);
-	signal(SIGQUIT, signal_quit);
-
 	count = 0;
 	while (is_running) {
-		bytes_readed = recvfrom(data.sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data.addr, &data.addr_len);
+		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
 		if (!is_running)
 			break;
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -47,9 +44,9 @@ t_time_stats routine_receive(int fd) // TODO: refactor
 		if (bytes_readed <= 0) {
 			fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); // TODO: BORRAR
 			fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-			destroy_connection_data(true);
+			destroy_connection_data(data);
 			close(fd);
-			// TODO: enviar senal al hijo para que no deje huerfanos
+			// TODO: enviar senal al hijo para que no deje huerfanos, el sigint para que recicle
 			exit(EXIT_FAILURE);
 		}
 		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
@@ -67,8 +64,7 @@ t_time_stats routine_receive(int fd) // TODO: refactor
 		else
 			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
 				, ntohs(packet.ip.ip_len) - (uint16_t)sizeof(struct ip)
-				// , buffer
-				, data.ip_char
+				, data->ip_char
 				, ntohs(packet.icmp.icmp_seq)
 				, packet.ip.ip_ttl
 				, time_info.time
@@ -83,12 +79,11 @@ t_time_stats routine_receive(int fd) // TODO: refactor
 	};
 }
 
-static bool send_msg(void* const buffer, size_t size)
+static bool send_msg(t_connection_data* const data, void* const buffer, size_t size)
 {
 	update_icmp(buffer, (uint8_t*)buffer + sizeof(struct icmp), size);
 
-	// TODO: hacerlo no bloqueante
-	if (sendto(data.sockfd, buffer, sizeof(struct icmp) + size, 0, (struct sockaddr*)&data.addr, data.addr_len) < 0) {
+	if (sendto(data->sockfd, buffer, sizeof(struct icmp) + size, 0, (struct sockaddr*)&data->addr, data->addr_len) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		return false;
 	}
@@ -99,15 +94,12 @@ static bool send_msg(void* const buffer, size_t size)
 	return true;
 }
  
-void routine_send(int fd)
+void routine_send(t_connection_data* const data, int fd)
 {
 	ssize_t count;
 	char    msg[sizeof(struct icmp) + 36]; // TODO: hacer typedef msg
 
 	count = 0;
-
-	signal(SIGINT, signal_int_send_routine);
-	signal(SIGQUIT, signal_quit);
 
 	init_icmp((struct icmp*)msg);
 	memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
@@ -116,7 +108,7 @@ void routine_send(int fd)
 	if (flags & LOAD) {
 		max_count += preload;
 		for (int64_t i = 0; i < preload; i++) {
-			if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp))) {
+			if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
 				is_running = false;
 				// TODO: senal en el receiver
 				break;
@@ -126,7 +118,7 @@ void routine_send(int fd)
 	}
 
 	while (is_running) {
-		if (!send_msg(msg, sizeof(msg) - sizeof(struct icmp))) {
+		if (!send_msg(data, msg, sizeof(msg) - sizeof(struct icmp))) {
 			// TODO: senal en el receiver
 			break;
 		}
@@ -136,7 +128,7 @@ void routine_send(int fd)
 		usleep(interval); // TODO: si el ctr C se da mientras esto, deberia parar, no terminar el usleep
 	}
 
-	destroy_connection_data(true);
+	destroy_connection_data(data);
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
 	exit(0); // TODO: al final se usa el status?

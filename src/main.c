@@ -1,18 +1,22 @@
 #include "ft_ping.h"
 
-t_connection_data data;
 
 int main(int argc, char* argv[])
 {
+	t_connection_data data;
 	// TODO: mover a otro sitio
 	srand(time(NULL));
         id = rand();
 
 	parser(argc, argv);
 	data = get_connection_data(argv[optind]);
-	print_header();
+	print_header(&data);
 	
-	// TODO: esto era para ver que era una direccion valida o para que?
+
+	// TODO: refactor
+	signal(SIGINT, signal_int);
+	signal(SIGQUIT, signal_quit);
+
 	int tmp3 = inet_pton(AF_INET, data.ip_char, &data.addr.sin_addr.s_addr);
 
 	if (tmp3 < 0) {
@@ -28,7 +32,7 @@ int main(int argc, char* argv[])
 	int sv[2];
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		destroy_connection_data(true);
+		destroy_connection_data(&data);
 		return EXIT_FAILURE; // TODO: realmente esto podria ser que simplemente llegue al final y punto
 	}
 
@@ -36,15 +40,15 @@ int main(int argc, char* argv[])
 
 	if (pid < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		destroy_connection_data(true);
+		destroy_connection_data(&data);
 		return EXIT_FAILURE; // TODO: realmente esto podria ser que simplemente llegue al final y punto
 	} else if (pid == 0) {
 		close(sv[1]);
-		routine_send(sv[0]);
+		routine_send(&data, sv[0]);
 	}
 
 	close(sv[0]);
-	t_time_stats time_stats = routine_receive(sv[1]);
+	t_time_stats time_stats = routine_receive(&data, sv[1]);
 	
 	size_t packets_sent;
 	if (recv(sv[1], &packets_sent, sizeof(packets_sent), 0) < 0) {
@@ -70,8 +74,8 @@ int main(int argc, char* argv[])
 		, time_stats.min_time
 		, time_stats.avg_time
 		, time_stats.max_time
-	); // TODO: terminar bien
+	);
 
-	destroy_connection_data(true);
+	destroy_connection_data(&data);
 	return EXIT_SUCCESS;
 }

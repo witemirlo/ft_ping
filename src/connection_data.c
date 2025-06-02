@@ -104,14 +104,13 @@ t_connection_data get_connection_data(char const* const str_addr)
 	return data;
 }
 
-void destroy_connection_data(bool destroy_sockfd) // TODO: realmente hace falta el bool?
+void destroy_connection_data(t_connection_data* const data)
 {
-	free(data.canonname);
-	data.canonname = NULL;
+	free(data->canonname);
+	data->canonname = NULL;
 
-	free(data.ip_char);
-	data.ip_char = NULL;
+	free(data->ip_char);
+	data->ip_char = NULL;
 
-	if (destroy_sockfd)
-		close(data.sockfd);
+	close(data->sockfd);
 }
