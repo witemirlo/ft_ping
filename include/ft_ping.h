@@ -25,14 +25,13 @@
 
 // TYPES -----------------------------------------------------------------------
 typedef enum e_flags {
-	NO_FLAGS = 0x0,
+	NO_FLAGS       = 0x0,
 	VERBOSE_OUTPUT = 0x1,
-	COUNT = 0x2,
-	FLOOD = 0x4,
-	INTERVAL = 0x10,
-	QUIET = 0x20,
-	LOAD = 0x40,
-
+	COUNT          = 0x2,
+	FLOOD          = 0x4,
+	INTERVAL       = 0x10,
+	QUIET          = 0x20,
+	LOAD           = 0x40
 } t_flags;
 
 typedef struct s_complete_packet {

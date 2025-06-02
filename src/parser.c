@@ -3,14 +3,16 @@
 static int64_t parse_num(char const* const str, bool comma, int muliplier)
 {
 	for (size_t i = 0; str[i]; i++) {
-		if (!isdigit(str[i])) { // TODO: refactor
-			if (comma && str[i] == '.') {
-				comma = false;
-				continue;
-			}
-			fprintf(stderr, "%s: invalid value (`%s' near `%s')\n", __progname, str, str + i);
-			return -1;
+		if (isdigit(str[i]))
+			continue;
+
+		if (comma && str[i] == '.') {
+			comma = false;
+			continue;
 		}
+
+		fprintf(stderr, "%s: invalid value (`%s' near `%s')\n", __progname, str, str + i);
+		return -1;
 	}
 
 	return atof(str) * muliplier;
