@@ -63,6 +63,7 @@ typedef struct s_time_stats {
 	double avg_time;
 	double max_time;
 	size_t packets_received;
+	size_t packets_sent;
 } t_time_stats;
 
 typedef struct s_payload_pattern {
@@ -90,6 +91,7 @@ void parser(int argc, char* argv[]);
 // -- CONNECTION DATA ----------------------------------------------------------
 void get_connection_data(t_connection_data* data, char const* const str_addr);
 void destroy_connection_data(t_connection_data* const data);
+void error_destroy_connection_data(t_connection_data* data);
 
 // -- FLAGS --------------------------------------------------------------------
 void print_header(t_connection_data const* const data);
@@ -103,8 +105,7 @@ void init_icmp(struct icmp* const icmp);
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size);
 
 // -- ROUTINES -----------------------------------------------------------------
-void routine_send(t_connection_data* const data, int fd);
-t_time_stats routine_receive(t_connection_data* const data, int fd);
+t_time_stats routines(t_connection_data* data);
 
 // -- PAYLOAD ------------------------------------------------------------------
 void init_payload(char const* const str);

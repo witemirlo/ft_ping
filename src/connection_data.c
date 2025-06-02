@@ -110,3 +110,10 @@ void destroy_connection_data(t_connection_data* const data)
 
 	close(data->sockfd);
 }
+
+void error_destroy_connection_data(t_connection_data* data)
+{
+        fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+        destroy_connection_data(data);
+        exit(EXIT_FAILURE);
+}

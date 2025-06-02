@@ -24,7 +24,7 @@ static t_time_info get_time_info(char* buffer, size_t buffer_len, size_t count, 
 	return time_info;
 }
 
-t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
+static t_time_stats routine_receive(t_connection_data* const data, int fd) // TODO: refactor
 {
 	t_complete_packet packet;
 	char              buffer[BUFSIZ];
@@ -94,7 +94,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 	return true;
 }
  
-void routine_send(t_connection_data* const data, int fd)
+static void routine_send(t_connection_data* const data, int fd)
 {
 	ssize_t count;
 	char    msg[sizeof(struct icmp) + 36]; // TODO: hacer typedef msg
@@ -132,4 +132,34 @@ void routine_send(t_connection_data* const data, int fd)
 	send(fd, &count, sizeof(count), 0);
 	close(fd);
 	exit(0); // TODO: al final se usa el status?
+}
+
+t_time_stats routines(t_connection_data* data)
+{
+	t_time_stats time_stats = {0};
+	pid_t        pid;
+	int          sv[2];
+
+	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0)
+		error_destroy_connection_data(data);
+
+	pid = fork();
+
+	if (pid < 0)
+		error_destroy_connection_data(data);
+	else if (pid == 0) {
+		close(sv[1]);
+		routine_send(data, sv[0]);
+	}
+
+	close(sv[0]);
+	time_stats = routine_receive(data, sv[1]);
+	
+	if (recv(sv[1], &time_stats.packets_sent, sizeof(time_stats.packets_sent), 0) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		// TODO: hacer que retorne (liberando) un status de error
+	}
+	close(sv[1]);
+
+	return time_stats;
 }
