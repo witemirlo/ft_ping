@@ -63,20 +63,20 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		if (!is_running)
 			break;
 
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			errno = 0;
-			continue;
-		}
-
-		// TODO: este da duplicados por algun motivo
-		// if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
-		if (errno == EHOSTUNREACH) {
-			// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
-			print_ttl_exceeded(data, &packet);
-			continue;
-		}
-
 		if (bytes_readed <= 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				errno = 0;
+				continue;
+			}
+
+			// TODO: este da duplicados por algun motivo
+			// if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
+			if (errno == EHOSTUNREACH) {
+				// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
+				print_ttl_exceeded(data, &packet);
+				continue;
+			}
+
 			close(fd);
 			kill(pid, SIGINT);
 			error_destroy_connection_data(data);
