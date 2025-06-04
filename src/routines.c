@@ -42,12 +42,10 @@ static void print_data_received(t_complete_packet const* const packet, t_time_in
 
 static void print_ttl_exceeded(t_complete_packet const* const packet)
 {
-	// TODO: -20 bytes from 64.96.0.0: No route to host (ttl=1)
 	printf("%d bytes from %s: Time to live exceeded\n"
 		, ntohs(packet->ip.ip_len) - (uint16_t)sizeof(struct ip)
 		, inet_ntoa(packet->ip.ip_src)
 	);
-
 }
 
 static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
@@ -55,6 +53,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 	t_complete_packet packet;
 	ssize_t           bytes_readed, count, packets_received;
 	t_time_info       time_info;
+	uint16_t          packet_id;
 
 	count = 0;
 	packets_received = 0;
@@ -79,16 +78,20 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		}
 
 		if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
+			packet_id = ((uint16_t*)(&packet))[10 + 4 + 10 + 2];
+			if (packet_id != config.id)
+				continue;
 			count++;
 			print_ttl_exceeded(&packet);
 			continue;
 		}
 
+		if(ntohs(packet.icmp.icmp_id) != config.id)
+			continue;
+
 		if (packet.icmp.icmp_type == ICMP_ECHO)
 			continue;
 
-		if(packet.icmp.icmp_id != config.id)
-			continue;
 
 		count++;
 		packets_received++;
