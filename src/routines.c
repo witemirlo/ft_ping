@@ -21,7 +21,7 @@ static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 	return time_info;
 }
 
-static void print_data_received(t_connection_data const* const data, t_complete_packet const* const packet, t_time_info const* const time_info)
+static void print_data_received(t_complete_packet const* const packet, t_time_info const* const time_info)
 {
 	if (config.flags & QUIET)
 		return;
@@ -33,19 +33,19 @@ static void print_data_received(t_connection_data const* const data, t_complete_
 
 	printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%.3f ms\n"
 		, ntohs(packet->ip.ip_len) - (uint16_t)sizeof(struct ip)
-		, data->ip_char
+		, inet_ntoa(packet->ip.ip_src)
 		, ntohs(packet->icmp.icmp_seq)
 		, packet->ip.ip_ttl
 		, time_info->time
 	);
 }
 
-static void print_ttl_exceeded(t_connection_data const* const data, t_complete_packet const* const packet)
+static void print_ttl_exceeded(t_complete_packet const* const packet)
 {
-	printf("%d bytes from %s: %s\n"
+	// TODO: -20 bytes from 64.96.0.0: No route to host (ttl=1)
+	printf("%d bytes from %s: Time to live exceeded\n"
 		, ntohs(packet->ip.ip_len) - (uint16_t)sizeof(struct ip)
-		, data->ip_char
-		, strerror(errno)
+		, inet_ntoa(packet->ip.ip_src)
 	);
 
 }
@@ -53,15 +53,17 @@ static void print_ttl_exceeded(t_connection_data const* const data, t_complete_p
 static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
 {
 	t_complete_packet packet;
-	ssize_t           bytes_readed, count;
+	ssize_t           bytes_readed, count, packets_received;
 	t_time_info       time_info;
 
 	count = 0;
+	packets_received = 0;
 	while (is_running) {
+		if (config.max_count > 0 && count >= config.max_count) // TODO: quizas esto necesita un refactor y estar en la condicion del bucle
+			is_running = false;
+
+		memset(&packet, 0, sizeof(packet));
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
-		// TODO: si es Time to live exceeded deberia seguir
-		if (!is_running)
-			break;
 
 		if (bytes_readed <= 0) {
 			if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -69,31 +71,31 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 				continue;
 			}
 
-			// TODO: este da duplicados por algun motivo
-			// if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
-			if (errno == EHOSTUNREACH) {
-				// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
-				print_ttl_exceeded(data, &packet);
-				continue;
+			if (bytes_readed == 0){
+				close(fd);
+				kill(pid, SIGINT);
+				error_destroy_connection_data(data);
 			}
-
-			close(fd);
-			kill(pid, SIGINT);
-			error_destroy_connection_data(data);
 		}
 
-		if (packet.icmp.icmp_type != ICMP_ECHOREPLY)
+		if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
+			// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
+			print_ttl_exceeded(&packet);
+			count++;
+			continue;
+		}
+
+		if (packet.icmp.icmp_type == ICMP_ECHO)
 			continue;
 
 		if(packet.icmp.icmp_id != config.id)
 			continue;
 
 		count++;
-		if (config.max_count > 0 && count >= config.max_count)
-			is_running = false;
+		packets_received++;
 
 		time_info = get_time_info(count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
-		print_data_received(data, &packet, &time_info);
+		print_data_received(&packet, &time_info);
 	}
 
 	kill(pid, SIGINT);
@@ -102,7 +104,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		.min_time = time_info.min_time,
 		.avg_time = time_info.avg_time,
 		.max_time = time_info.max_time,
-		.packets_received = count
+		.packets_received = packets_received
 	};
 }
 
@@ -132,7 +134,7 @@ static void routine_send(t_connection_data* const data, int fd)
 	memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
 	set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 
-	if (config.flags & LOAD) {
+	if (config.flags & LOAD) { // TODO: quizas deberia ser una funcion
 		if (config.max_count > 0)
 			config.max_count += config.preload;
 		for (int64_t i = 0; i < config.preload; i++) {
