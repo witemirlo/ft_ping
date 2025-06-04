@@ -79,9 +79,8 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		}
 
 		if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
-			// TODO: si haces -c 2, el sender termina, pero este se queda esperando, si que cuenta que han llegado, pero no lo cuenta como bueno
-			print_ttl_exceeded(&packet);
 			count++;
+			print_ttl_exceeded(&packet);
 			continue;
 		}
 
@@ -173,6 +172,7 @@ t_time_stats routines(t_connection_data* data)
 	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) < 0)
 		error_destroy_connection_data(data);
 
+	setbuf(stdout, NULL);
 	pid = fork();
 
 	if (pid < 0)
