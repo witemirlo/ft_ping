@@ -44,9 +44,17 @@ static int get_fd_from_addrinfo(struct addrinfo* addr, struct addrinfo** rp)
 
 static void set_socket_options(int sockfd)
 {
-	const int opt = 1;
+	const int32_t opt = config.ttl;
 
 	if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &opt, sizeof(opt)) < 0) {
+		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (!(config.flags & TTL))
+		return;
+	
+	if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &opt, sizeof(opt)) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		exit(EXIT_FAILURE);
 	}

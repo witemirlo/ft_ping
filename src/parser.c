@@ -18,21 +18,20 @@ static int64_t parse_num(char const* const str, bool comma, int muliplier)
 	return atof(str) * muliplier;
 }
 
-static void case_v(char const* const str)
+static void case_verbose(char const* const str)
 {
 	(void)str;
 	config.flags |= VERBOSE_OUTPUT;
 }
 
-static void case_c(char const* const str)
+static void case_count(char const* const str)
 {
 	config.max_count = parse_num(str, false, 1);
 	if (config.max_count < 0)
 		exit(EXIT_FAILURE);
-	// optind++;
 }
 
-static void case_i(char const* const str)
+static void case_interval(char const* const str)
 {
 	const int multiplier = 1000000;
 
@@ -48,10 +47,9 @@ static void case_i(char const* const str)
 		fprintf(stderr, "%s: value too small: %.2f\n", __progname, (double)config.interval / (double)multiplier);
 		exit(EXIT_FAILURE);
 	}
-	// optind++;
 }
 
-static void case_f(char const* const str)
+static void case_flood(char const* const str)
 {
 	(void)str;
 	config.flags |= FLOOD;
@@ -68,20 +66,19 @@ static void case_f(char const* const str)
 	}
 }
 
-static void case_q(char const* const str)
+static void case_quiet(char const* const str)
 {
 	(void)str;
 	config.flags |= QUIET;
 }
 
-static void case_p(char const* const str)
+static void case_pattern(char const* const str)
 {
 	(void)str;
 	init_payload(str);
-	// optind++;
 }
 
-static void case_l(char const* const str)
+static void case_preload(char const* const str)
 {
 	(void)str;
 	config.flags |= LOAD;
@@ -94,8 +91,24 @@ static void case_l(char const* const str)
 		fprintf(stderr, "%s: Error: Operation not permitted\n", __progname);
 		exit(EXIT_FAILURE);
 	}
+}
 
-	// optind++;
+static void case_ttl(char const* const str)
+{
+	fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, str);
+
+	config.flags |= TTL;
+	config.ttl = (int32_t)parse_num(str, false, 1);
+
+	if (config.ttl < 1) {
+		fprintf(stderr, "%s: option value too small: %d", __progname, config.ttl);
+		exit(EXIT_FAILURE);
+	}
+
+	if (config.ttl > 255) {
+		fprintf(stderr, "%s: option value too big: %d", __progname, config.ttl);
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void case_default(char const* const str)
@@ -105,20 +118,29 @@ static void case_default(char const* const str)
 	printf(
 		"Usage: %s [OPTION...] HOST ...\n"
 		"Send ICMP ECHO_REQUEST packets to network hosts.\n"
-		" \nOptions valid for all request types:\n\n"
-		"  -c NUMBER                  stop after sending NUMBER packets\n"
-		"  -i NUMBER                  wait NUMBER seconds between sending each packet\n"
-		" \nOptions valid for --echo requests:\n\n"
-		"  -f                         flood ping (root only)\n"
-		"  -l NUMBER                  send NUMBER packets as fast as possible before\n"
-                "                             falling into normal mode of behavior (root only)\n"
-		"  -p PATTERN                 fill ICMP packet with given pattern (hex)"
-		"  -q                         quiet output\n"
-		"  -v                         verbose output\n"
-		"  -?                         give this help list\n"
-		"\nMandatory or optional arguments to long options are also mandatory or optional\n"
+		"\n"
+		" Options valid for all request types:\n"
+		"\n"
+		"  -c, --count=NUMBER         stop after sending NUMBER packets\n"
+		"  -i, --interval=NUMBER      wait NUMBER seconds between sending each packet\n"
+		"      --ttl=N                specify N as time-to-live\n"
+		"  -v, --verbose              verbose output\n"
+		"\n"
+		" Options valid for --echo requests:\n"
+		"\n"
+		"  -f, --flood                flood ping (root only)\n"
+		"  -l, --preload=NUMBER       send NUMBER packets as fast as possible before\n"
+		"                             falling into normal mode of behavior (root only)\n"
+		"  -p, --pattern=PATTERN      fill ICMP packet with given pattern (hex)\n"
+		"  -q, --quiet                quiet output\n"
+		"\n"
+		"  -?, --help                 give this help list\n"
+		"      --usage                give a short usage message\n"
+		"\n"
+		"Mandatory or optional arguments to long options are also mandatory or optional\n"
 		"for any corresponding short options.\n"
-		"\nOptions marked with (root only) are available only to superuser.\n"
+		"\n"
+		"Options marked with (root only) are available only to superuser.\n"
 		, __progname
 	);
 	exit(EXIT_SUCCESS);
@@ -134,6 +156,7 @@ static uint8_t get_case(char c)
 		case 'q': return 5;
 		case 'p': return 6;
 		case 'l': return 7;
+		case 0:   return 8;
 		default:  return 0;
 	}
 }
@@ -142,20 +165,38 @@ void parser(int argc, char* argv[])
 {
 	void (*cases[])(char const* const) = {
 		case_default,
-		case_v,
-		case_c,
-		case_i,
-		case_f,
-		case_q,
-		case_p,
-		case_l
+		case_verbose,
+		case_count,
+		case_interval,
+		case_flood,
+		case_quiet,
+		case_pattern,
+		case_preload,
+		case_ttl
 	};
 	int opt;
 
 	init_payload("0");
 	config.flags = NO_FLAGS;
-	while ((opt = getopt(argc, argv, "?vc:fi:qfp:l:")) > 0)
+
+	int option_index = 0;
+	static struct option long_options[] = {
+		{"ttl",      required_argument, 0,  0},
+		{"count",    required_argument, 0,  'c'},
+		{"interval", required_argument, 0,  'i'},
+		{"verbose",  no_argument, 0,  'v'},
+		{"flood",    no_argument, 0,  'f'},
+		{"preload",  required_argument, 0,  'l'},
+		{"pattern",  required_argument, 0,  'p'},
+		{"quiet",    no_argument, 0,  'q'},
+		{"help",     no_argument, 0,  '?'},
+		{"usage",    no_argument, 0,  '?'},
+		{0,          0, 0,  0}
+	};
+
+	while ((opt = getopt_long(argc, argv, "?vc:fi:qfp:l:", long_options, &option_index)) > 0) {
 		(cases[get_case(opt)])(optarg);
+	}
 
 	if (optind >= argc) {
 		fprintf(stderr, "%s: usage error: Destination address required\n", __progname);

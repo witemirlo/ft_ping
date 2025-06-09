@@ -1,6 +1,7 @@
 #ifndef FT_PING_H
 # define FT_PING_H
 
+ #include <getopt.h>
 # include <arpa/inet.h>
 # include <ctype.h>
 # include <errno.h>
@@ -31,7 +32,8 @@ typedef enum e_flags {
 	FLOOD          = 0x4,
 	INTERVAL       = 0x10,
 	QUIET          = 0x20,
-	LOAD           = 0x40
+	LOAD           = 0x40,
+	TTL            = 0x80
 } t_flags;
 
 typedef struct s_complete_packet {
@@ -74,6 +76,7 @@ typedef struct s_config {
 	int64_t max_count;
 	int64_t interval;
 	int64_t preload;
+	int32_t ttl;
 	t_flags flags;
 } t_config;
 

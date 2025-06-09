@@ -4,6 +4,7 @@ t_config config = {
 	.max_count = -1,
 	.interval  = 1000000,
 	.preload   = 0,
+	.ttl       = 64,
 	.flags     = NO_FLAGS
 };
 
