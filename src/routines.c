@@ -69,7 +69,9 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		FD_SET(data->sockfd, &set);
 		memset(&tv, 0, sizeof(tv));
 		if (select(data->sockfd + 1, &set, NULL, NULL, &tv) < 0) {
-			// TODO: control de errores
+			close(fd);
+			kill(pid, SIGINT);
+			error_destroy_connection_data(data);
 		}
 
 		if (!FD_ISSET(data->sockfd, &set)) {
