@@ -54,12 +54,27 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 	ssize_t           bytes_readed, count, packets_received;
 	t_time_info       time_info;
 	uint16_t          packet_id;
+	fd_set            set;
+	struct timeval    tv;
+
+	FD_ZERO(&set);
+
 
 	count = 0;
 	packets_received = 0;
 	while (is_running) {
-		if (config.max_count > 0 && count >= config.max_count) // TODO: quizas esto necesita un refactor y estar en la condicion del bucle
+		if (config.max_count > 0 && count >= config.max_count)
 			is_running = false;
+
+		FD_SET(data->sockfd, &set);
+		memset(&tv, 0, sizeof(tv));
+		if (select(data->sockfd + 1, &set, NULL, NULL, &tv) < 0) {
+			// TODO: control de errores
+		}
+
+		if (!FD_ISSET(data->sockfd, &set)) {
+			continue;
+		}
 
 		memset(&packet, 0, sizeof(packet));
 		bytes_readed = recvfrom(data->sockfd, &packet, sizeof(packet), MSG_DONTWAIT, (struct sockaddr*)&data->addr, &data->addr_len);
@@ -70,11 +85,9 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 				continue;
 			}
 
-			if (bytes_readed == 0){
-				close(fd);
-				kill(pid, SIGINT);
-				error_destroy_connection_data(data);
-			}
+			close(fd);
+			kill(pid, SIGINT);
+			error_destroy_connection_data(data);
 		}
 
 		if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
@@ -176,6 +189,8 @@ t_time_stats routines(t_connection_data* data)
 		error_destroy_connection_data(data);
 
 	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
+
 	pid = fork();
 
 	if (pid < 0)
