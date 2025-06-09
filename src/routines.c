@@ -86,7 +86,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 			continue;
 		}
 
-		if(ntohs(packet.icmp.icmp_id) != config.id)
+		if(packet.icmp.icmp_id != config.id)
 			continue;
 
 		if (packet.icmp.icmp_type == ICMP_ECHO)
