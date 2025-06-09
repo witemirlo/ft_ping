@@ -95,18 +95,19 @@ static void case_preload(char const* const str)
 
 static void case_ttl(char const* const str)
 {
-	fprintf(stderr, "%s:%d: %s\n", __FILE__, __LINE__, str);
-
 	config.flags |= TTL;
 	config.ttl = (int32_t)parse_num(str, false, 1);
 
-	if (config.ttl < 1) {
-		fprintf(stderr, "%s: option value too small: %d", __progname, config.ttl);
+	if (config.ttl < 0)
+		exit(EXIT_FAILURE);
+
+	if (config.ttl == 0) {
+		fprintf(stderr, "%s: option value too small: %d\n", __progname, config.ttl);
 		exit(EXIT_FAILURE);
 	}
 
 	if (config.ttl > 255) {
-		fprintf(stderr, "%s: option value too big: %d", __progname, config.ttl);
+		fprintf(stderr, "%s: option value too big: %d\n", __progname, config.ttl);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -156,7 +157,7 @@ static uint8_t get_case(char c)
 		case 'q': return 5;
 		case 'p': return 6;
 		case 'l': return 7;
-		case 0:   return 8;
+		case 1:   return 8;
 		default:  return 0;
 	}
 }
@@ -179,19 +180,20 @@ void parser(int argc, char* argv[])
 	init_payload("0");
 	config.flags = NO_FLAGS;
 
+	// TODO: mover esto cuando funcione
 	int option_index = 0;
 	static struct option long_options[] = {
-		{"ttl",      required_argument, 0,  0},
+		{"ttl",      required_argument, 0,  1},
 		{"count",    required_argument, 0,  'c'},
 		{"interval", required_argument, 0,  'i'},
-		{"verbose",  no_argument, 0,  'v'},
-		{"flood",    no_argument, 0,  'f'},
+		{"verbose",  no_argument,       0,  'v'},
+		{"flood",    no_argument,       0,  'f'},
 		{"preload",  required_argument, 0,  'l'},
 		{"pattern",  required_argument, 0,  'p'},
-		{"quiet",    no_argument, 0,  'q'},
-		{"help",     no_argument, 0,  '?'},
-		{"usage",    no_argument, 0,  '?'},
-		{0,          0, 0,  0}
+		{"quiet",    no_argument,       0,  'q'},
+		{"help",     no_argument,       0,  '?'},
+		{"usage",    no_argument,       0,  '?'},
+		{0,          0,                 0,  0}
 	};
 
 	while ((opt = getopt_long(argc, argv, "?vc:fi:qfp:l:", long_options, &option_index)) > 0) {
