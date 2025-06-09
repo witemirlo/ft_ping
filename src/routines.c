@@ -85,9 +85,11 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 				continue;
 			}
 
-			close(fd);
-			kill(pid, SIGINT);
-			error_destroy_connection_data(data);
+			if (bytes_readed == 0) {
+				close(fd);
+				kill(pid, SIGINT);
+				error_destroy_connection_data(data);
+			}
 		}
 
 		if (packet.icmp.icmp_type == ICMP_TIME_EXCEEDED) {
