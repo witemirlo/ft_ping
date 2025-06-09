@@ -29,7 +29,7 @@ static void case_c(char const* const str)
 	config.max_count = parse_num(str, false, 1);
 	if (config.max_count < 0)
 		exit(EXIT_FAILURE);
-	optind++;
+	// optind++;
 }
 
 static void case_i(char const* const str)
@@ -48,7 +48,7 @@ static void case_i(char const* const str)
 		fprintf(stderr, "%s: value too small: %.2f\n", __progname, (double)config.interval / (double)multiplier);
 		exit(EXIT_FAILURE);
 	}
-	optind++;
+	// optind++;
 }
 
 static void case_f(char const* const str)
@@ -78,7 +78,7 @@ static void case_p(char const* const str)
 {
 	(void)str;
 	init_payload(str);
-	optind++;
+	// optind++;
 }
 
 static void case_l(char const* const str)
@@ -95,7 +95,7 @@ static void case_l(char const* const str)
 		exit(EXIT_FAILURE);
 	}
 
-	optind++;
+	// optind++;
 }
 
 static void case_default(char const* const str)
@@ -154,8 +154,8 @@ void parser(int argc, char* argv[])
 
 	init_payload("0");
 	config.flags = NO_FLAGS;
-	while ((opt = getopt(argc, argv, "?vcfiqfpl")) > 0)
-		(cases[get_case(opt)])(argv[optind]);
+	while ((opt = getopt(argc, argv, "?vc:fi:qfp:l:")) > 0)
+		(cases[get_case(opt)])(optarg);
 
 	if (optind >= argc) {
 		fprintf(stderr, "%s: usage error: Destination address required\n", __progname);
