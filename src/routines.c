@@ -1,4 +1,7 @@
 #include "ft_ping.h"
+#include <netinet/ip_icmp.h>
+#include <stddef.h>
+#include <stdint.h>
 
 static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 {
@@ -19,6 +22,27 @@ static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 	time_info.max_time = (time_info.time > time_info.max_time) ? time_info.time : time_info.max_time;
 	time_info.avg_time = total_time / count;
 	return time_info;
+}
+
+static bool check_received_package(void const* const package)
+{
+	static char          msg[sizeof(struct icmp) + 36];
+	static bool          msg_is_set = false;
+	size_t const         payload_index = sizeof(struct ip) + sizeof (struct icmphdr);
+	uint8_t const* const payload = (uint8_t const* const)package + payload_index;
+
+	if (!msg_is_set) {
+		init_icmp((struct icmp*)msg);
+		memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
+		set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
+	}
+
+	if (memcmp((msg + payload_index), payload, (sizeof(msg) - payload_index)))
+		return false;
+
+	// TODO: comprobar el checksum
+	
+	return true;
 }
 
 static void print_data_received(t_complete_packet const* const packet, t_time_info const* const time_info)
