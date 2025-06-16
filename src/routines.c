@@ -28,7 +28,7 @@ static bool check_received_package(void const* const package)
 {
 	static char          msg[sizeof(struct icmp) + 36];
 	static bool          msg_is_set = false;
-	size_t const         payload_index = sizeof(struct ip) + sizeof (struct icmphdr);
+	size_t const         payload_index = sizeof(struct ip) + sizeof(struct icmphdr);
 	uint8_t const* const payload = (uint8_t const* const)package + payload_index;
 
 	if (!msg_is_set) {
@@ -39,8 +39,6 @@ static bool check_received_package(void const* const package)
 
 	if (memcmp((msg + payload_index), payload, (sizeof(msg) - payload_index)))
 		return false;
-
-	// TODO: comprobar el checksum
 	
 	return true;
 }
