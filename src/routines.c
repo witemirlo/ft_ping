@@ -83,7 +83,6 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 
 	FD_ZERO(&set);
 
-
 	count = 0;
 	packets_received = 0;
 	// TODO: el ctrl+c
@@ -96,7 +95,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		if (select(data->sockfd + 1, &set, NULL, NULL, &tv) < 0) {
 			close(fd);
 			kill(pid, SIGINT);
-			error_destroy_connection_data(data);
+			break;
 		}
 
 		if (!FD_ISSET(data->sockfd, &set)) {
@@ -233,6 +232,7 @@ t_time_stats routines(t_connection_data* data)
 	close(sv[0]);
 	time_stats = routine_receive(data, sv[1], pid);
 	
+	// TODO: desde select(), ctrl+c hace que eso no vaya
 	if (recv(sv[1], &time_stats.packets_sent, sizeof(time_stats.packets_sent), 0) < 0) {
 		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
 		// TODO: hacer que retorne (liberando) un status de error
