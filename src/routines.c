@@ -26,10 +26,12 @@ static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 
 static bool check_received_package(void const* const package)
 {
-	static char          msg[sizeof(struct icmp) + 36];
-	static bool          msg_is_set = false;
-	size_t const         payload_index = sizeof(struct ip) + sizeof(struct icmphdr);
-	uint8_t const* const payload = (uint8_t const* const)package + payload_index;
+	static char                    msg[sizeof(struct icmp) + 36];
+	static bool                    msg_is_set = false;
+
+	t_complete_packet const* const package_ptr = package;
+	size_t const                   payload_index = sizeof(struct ip) + sizeof(struct icmphdr);
+	uint8_t const* const           payload = (uint8_t const* const)package + payload_index;
 
 	if (!msg_is_set) {
 		init_icmp((struct icmp*)msg);
@@ -38,6 +40,9 @@ static bool check_received_package(void const* const package)
 	}
 
 	if (memcmp((msg + payload_index), payload, (sizeof(msg) - payload_index)))
+		return false;
+
+	if (package_ptr->icmp.icmp_cksum != icmp_checksum(&package_ptr->icmp, payload, sizeof(msg) - payload_index))
 		return false;
 	
 	return true;
@@ -131,10 +136,11 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		if (packet.icmp.icmp_type == ICMP_ECHO)
 			continue;
 
-
 		count++;
-		packets_received++;
+		// if (!check_received_package(&packet))
+			// continue;
 
+		packets_received++;
 		time_info = get_time_info(count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		print_data_received(&packet, &time_info);
 	}
