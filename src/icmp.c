@@ -1,4 +1,5 @@
 #include "ft_ping.h"
+#include <stdint.h>
 
 static u_int16_t sum_ones_complement(u_int16_t a, u_int16_t b)
 {
@@ -50,6 +51,35 @@ void icmp_checksum(struct icmp* const icmp, void const* const payload, size_t pa
 
 	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;
 }
+
+uint16_t get_checksum(struct icmp const* const icmp, void const* const payload, size_t payload_size)
+{
+	uint16_t checksum;
+
+	checksum = 0;
+
+	checksum = sum_ones_complement(icmp->icmp_type, icmp->icmp_code);
+	checksum = sum_ones_complement(checksum, icmp->icmp_id);
+	checksum = sum_ones_complement(checksum, icmp->icmp_seq);
+
+	checksum = sum_ones_complement(checksum, (icmp->icmp_otime >> 16));
+	checksum = sum_ones_complement(checksum, (icmp->icmp_otime & 0xffff));
+
+	checksum = sum_ones_complement(checksum, (icmp->icmp_rtime >> 16));
+	checksum = sum_ones_complement(checksum, (icmp->icmp_rtime & 0xffff));
+
+	for (size_t i = 0; i < payload_size; i++) {
+		if (i % 2 == 0)
+			checksum = sum_ones_complement(checksum, ((uint8_t*)payload)[i]);
+		else
+			checksum = sum_ones_complement(checksum, ((uint8_t*)payload)[i] << 8);
+	}
+
+	checksum = 0xffff - checksum;
+
+	return checksum;
+}
+
 
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size)
 {
