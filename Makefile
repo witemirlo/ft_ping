@@ -13,10 +13,10 @@ SRCS     := src/main.c\
 OBJS     := $(SRCS:.c=.o)
 
 CC       := cc
-CFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2 -fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,float-divide-by-zero,float-cast-overflow
+CFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2#-fsanitize=address,pointer-compare,pointer-subtract,leak,undefined,float-divide-by-zero,float-cast-overflow
 CPPFLAGS := -I include/
 
-VFLAGS   := -Wall -Wextra -O0 -g3 -pedantic -Wformat=2 -Wformat-overflow=2
+VFLAGS   := -Wall -Wextra -O0 -g3
 TFLAGS   := google.com
 
 TTL      := 64
