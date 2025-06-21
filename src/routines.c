@@ -1,7 +1,4 @@
 #include "ft_ping.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
 
 static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 {
@@ -89,6 +86,7 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 
 	count = 0;
 	packets_received = 0;
+	// TODO: el ctrl+c
 	while (is_running) {
 		if (config.max_count > 0 && count >= config.max_count)
 			is_running = false;
