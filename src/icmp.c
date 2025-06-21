@@ -28,31 +28,7 @@ static void icmp_timestamp(struct icmp* const icmp)
         seq++;
 }
 
-void icmp_checksum(struct icmp* const icmp, void const* const payload, size_t payload_size)
-{
-	icmp->icmp_cksum = 0;
-
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_type, icmp->icmp_code);
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_id);
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, icmp->icmp_seq);
-
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime >> 16));
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_otime & 0xffff));
-
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime >> 16));
-	icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, (icmp->icmp_rtime & 0xffff));
-
-	for (size_t i = 0; i < payload_size; i++) {
-		if (i % 2 == 0)
-			icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i]);
-		else
-			icmp->icmp_cksum = sum_ones_complement(icmp->icmp_cksum, ((uint8_t*)payload)[i] << 8);
-	}
-
-	icmp->icmp_cksum = 0xffff - icmp->icmp_cksum;
-}
-
-uint16_t get_checksum(struct icmp const* const icmp, void const* const payload, size_t payload_size)
+uint16_t icmp_checksum(struct icmp const* const icmp, void const* const payload, size_t payload_size)
 {
 	uint16_t checksum;
 
@@ -80,11 +56,10 @@ uint16_t get_checksum(struct icmp const* const icmp, void const* const payload, 
 	return checksum;
 }
 
-
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size)
 {
 	icmp_timestamp(icmp);
-	icmp_checksum(icmp, payload, payload_size);
+	icmp->icmp_cksum = icmp_checksum(icmp, payload, payload_size);
 }
 
 void init_icmp(struct icmp* const icmp)

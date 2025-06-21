@@ -106,6 +106,7 @@ void signal_quit(int sig);
 // -- ICMP PAQUETS -------------------------------------------------------------
 void init_icmp(struct icmp* const icmp);
 void update_icmp(struct icmp* const icmp, void const* const payload, size_t payload_size);
+uint16_t icmp_checksum(struct icmp const* const icmp, void const* const payload, size_t payload_size);
 
 // -- ROUTINES -----------------------------------------------------------------
 t_time_stats routines(t_connection_data* data);
