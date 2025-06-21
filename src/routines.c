@@ -3,17 +3,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// TODO: BORRAR
-void dump(void const* const buffer, size_t size, char const* const msg)
-{
-	fprintf(stderr, "%s: ", msg);
-
-	for (size_t i = 0; i < size; i++) {
-		fprintf(stderr, "%2x ", ((uint8_t const*)buffer)[i]);
-	}
-	fprintf(stderr, "\n");
-}
-
 static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 {
 	static t_time_info time_info = {.min_time = DBL_MAX, .avg_time = 0, .max_time = 0};
@@ -41,27 +30,21 @@ static bool check_received_package(void const* const package)
 	static bool                    msg_is_set = false;
 
 	t_complete_packet const* const package_ptr = package;
-	size_t const                   payload_index = sizeof(struct ip) + sizeof(struct icmphdr);
+	size_t const                   payload_index = sizeof(struct ip) + sizeof(struct icmp);
 	uint8_t const* const           payload = (uint8_t const* const)package + payload_index;
 
-	fprintf(stderr, "%s:%d:\t a\n", __FILE__, __LINE__); // TODO: borrar
 	if (!msg_is_set) {
 		init_icmp((struct icmp*)msg);
 		memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
 		set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 	}
 
-	fprintf(stderr, "%s:%d:\t b\n", __FILE__, __LINE__); // TODO: borrar
-	dump(msg + payload_index, sizeof(msg) - payload_index, "    msg");
-	dump(payload, sizeof(msg) - payload_index, "payload");
 	if (memcmp((msg + payload_index), payload, (sizeof(msg) - payload_index)))
 		return false;
 
-	fprintf(stderr, "%s:%d:\t c\n", __FILE__, __LINE__); // TODO: borrar
 	if (package_ptr->icmp.icmp_cksum != icmp_checksum(&package_ptr->icmp, payload, sizeof(msg) - payload_index))
 		return false;
 	
-	fprintf(stderr, "%s:%d:\t d\n", __FILE__, __LINE__); // TODO: borrar
 	return true;
 }
 
