@@ -93,7 +93,6 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 		FD_SET(data->sockfd, &set);
 		memset(&tv, 0, sizeof(tv));
 		if (select(data->sockfd + 1, &set, NULL, NULL, &tv) < 0) {
-			close(fd);
 			kill(pid, SIGINT);
 			break;
 		}
@@ -201,12 +200,9 @@ static void routine_send(t_connection_data* const data, int fd)
 			break;
 		usleep(config.interval);
 	}
-	fprintf(stderr, "%s:%d loop finished\n", __FILE__, __LINE__);
 
 	send(fd, &count, sizeof(count), 0);
-	fprintf(stderr, "%s:%d send finished\n", __FILE__, __LINE__);
 	destroy_connection_data(data);
-	fprintf(stderr, "%s:%d clean finished\n", __FILE__, __LINE__);
 	close(fd);
 	exit(0);
 }
@@ -236,13 +232,11 @@ t_time_stats routines(t_connection_data* data)
 	time_stats = routine_receive(data, sv[1], pid);
 	
 	waitpid(pid, NULL, 0);
-	fprintf(stderr, "%s:%d waitpid finished\n", __FILE__, __LINE__);
-	// TODO: desde select(), ctrl+c hace que eso no vaya
 	if (recv(sv[1], &time_stats.packets_sent, sizeof(time_stats.packets_sent), 0) < 0) {
-		fprintf(stderr, "%s: Error: %s\n", __progname, strerror(errno));
-		// TODO: hacer que retorne (liberando) un status de error
+		close(sv[1]);
+		error_destroy_connection_data(data);
 	}
+	
 	close(sv[1]);
-
 	return time_stats;
 }
