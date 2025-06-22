@@ -1,11 +1,11 @@
 #ifndef FT_PING_H
 # define FT_PING_H
 
- #include <getopt.h>
 # include <arpa/inet.h>
 # include <ctype.h>
 # include <errno.h>
 # include <float.h>
+# include <getopt.h>
 # include <linux/if_packet.h>
 # include <net/ethernet.h>
 # include <netdb.h>
@@ -21,6 +21,7 @@
 # include <sys/socket.h>
 # include <sys/time.h>
 # include <sys/types.h>
+# include <sys/wait.h>
 # include <time.h>
 # include <unistd.h>
 
