@@ -82,9 +82,9 @@ typedef struct s_config {
 } t_config;
 
 // GLOBALS ---------------------------------------------------------------------
-extern const char* __progname;
-extern bool        is_running;
-extern t_config    config;
+extern const char*   __progname;
+extern volatile bool is_running;
+extern t_config      config;
 
 // FUNCTION PROTOTIPES ---------------------------------------------------------
 // -- INIT ---------------------------------------------------------------------

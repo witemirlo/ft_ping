@@ -1,6 +1,6 @@
 #include "ft_ping.h"
 
-bool is_running = true;
+volatile bool is_running = true;
 
 void signal_int(int sig)
 {
