@@ -32,8 +32,6 @@ uint16_t icmp_checksum(struct icmp const* const icmp, void const* const payload,
 {
 	uint16_t checksum;
 
-	checksum = 0;
-
 	checksum = sum_ones_complement(icmp->icmp_type, icmp->icmp_code);
 	checksum = sum_ones_complement(checksum, icmp->icmp_id);
 	checksum = sum_ones_complement(checksum, icmp->icmp_seq);
