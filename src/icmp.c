@@ -44,11 +44,8 @@ uint16_t icmp_checksum(struct icmp const* const icmp, void const* const payload,
 	checksum = sum_ones_complement(checksum, (icmp->icmp_rtime >> 16));
 	checksum = sum_ones_complement(checksum, (icmp->icmp_rtime & 0xffff));
 
-	for (size_t i = 0; i < payload_size; i++) {
-		if (i % 2 == 0)
-			checksum = sum_ones_complement(checksum, ((uint8_t*)payload)[i]);
-		else
-			checksum = sum_ones_complement(checksum, ((uint8_t*)payload)[i] << 8);
+	for (size_t i = 0; i < payload_size / 2; i++) {
+		checksum = sum_ones_complement(checksum, ((uint16_t*)payload)[i]);
 	}
 
 	checksum = 0xffff - checksum;
