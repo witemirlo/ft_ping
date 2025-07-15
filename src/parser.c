@@ -180,7 +180,6 @@ void parser(int argc, char* argv[])
 	init_payload("0");
 	config.flags = NO_FLAGS;
 
-	// TODO: mover esto cuando funcione
 	int option_index = 0;
 	static struct option long_options[] = {
 		{"ttl",      required_argument, 0,  1},

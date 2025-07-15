@@ -17,7 +17,6 @@ static void icmp_timestamp(struct icmp* const icmp)
 	static struct timeval tv = {0};
 
 	if (gettimeofday(&tv, NULL) < 0) {
-		// TODO: errores, quizas retornar algo para que main limpie
 		return;
 	}
 

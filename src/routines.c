@@ -21,30 +21,6 @@ static t_time_info get_time_info(size_t count, uint32_t otime, uint32_t rtime)
 	return time_info;
 }
 
-static bool check_received_package(void const* const package)
-{
-	static char                    msg[sizeof(struct icmp) + 36];
-	static bool                    msg_is_set = false;
-
-	t_complete_packet const* const package_ptr = package;
-	size_t const                   payload_index = sizeof(struct ip) + sizeof(struct icmp);
-	uint8_t const* const           payload = (uint8_t const* const)package + payload_index;
-
-	if (!msg_is_set) {
-		init_icmp((struct icmp*)msg);
-		memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
-		set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
-	}
-
-	if (memcmp((msg + payload_index), payload, (sizeof(msg) - payload_index)))
-		return false;
-
-	if (package_ptr->icmp.icmp_cksum != icmp_checksum(&package_ptr->icmp, payload, sizeof(msg) - payload_index))
-		return false;
-	
-	return true;
-}
-
 static void print_data_received(t_complete_packet const* const packet, t_time_info const* const time_info)
 {
 	if (config.flags & QUIET)
@@ -72,7 +48,7 @@ static void print_ttl_exceeded(t_complete_packet const* const packet)
 	);
 }
 
-static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid) // TODO: refactor
+static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t pid)
 {
 	t_complete_packet packet;
 	ssize_t           bytes_readed, count, packets_received;
@@ -85,7 +61,6 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 
 	count = 0;
 	packets_received = 0;
-	// TODO: el ctrl+c
 	while (is_running) {
 		if (config.max_count > 0 && count >= config.max_count)
 			is_running = false;
@@ -133,9 +108,6 @@ static t_time_stats routine_receive(t_connection_data* const data, int fd, pid_t
 			continue;
 
 		count++;
-		if (!check_received_package(&packet))
-			continue;
-
 		packets_received++;
 		time_info = get_time_info(count, packet.icmp.icmp_otime, packet.icmp.icmp_rtime);
 		print_data_received(&packet, &time_info);
@@ -169,7 +141,7 @@ static bool send_msg(t_connection_data* const data, void* const buffer, size_t s
 static void routine_send(t_connection_data* const data, int fd)
 {
 	ssize_t count;
-	char    msg[sizeof(struct icmp) + 36]; // TODO: hacer typedef msg
+	char    msg[sizeof(struct icmp) + 36];
 
 	count = 0;
 
@@ -177,7 +149,7 @@ static void routine_send(t_connection_data* const data, int fd)
 	memset(msg + sizeof(struct icmp), 0, sizeof(msg) - sizeof(struct icmp));
 	set_payload(msg + sizeof(struct icmp), sizeof(msg) - sizeof(struct icmp));
 
-	if (config.flags & LOAD) { // TODO: quizas deberia ser una funcion
+	if (config.flags & LOAD) {
 		if (config.max_count > 0)
 			config.max_count += config.preload;
 		for (int64_t i = 0; i < config.preload; i++) {
